@@ -1,0 +1,13 @@
+* Org Visibility
+
+Org Visibility is an Emacs package that adds the ability to persist (save and
+load) the state of the visible sections of =org-mode= files.  The state is
+automatically saved when the file is saved or killed, and restored when the
+file is loaded.
+
+See the [[file:org-visibility.el::;;; Installation][Installation]] and [[file:org-visibility.el::;;; Usage][Usage]] sections in the [[file:org-visibility.el][source code]] for more
+information.
+
+Unit tests can be run by [[file:org-visibility-test.el][loading the test file]] and calling =eval-buffer=.
+
+License:  [[file:LICENSE][GNU General Public License]]
