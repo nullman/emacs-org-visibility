@@ -185,7 +185,11 @@ behavior of `org-visibility-include-paths' and
   nil
   "Non-nil if buffer has been modified since last visibility save.")
 
-(defun buffer-file-checksum (&optional buffer)
+(defun org-visibility-timestamp ()
+  "Return timestamp in ISO 8601 format (YYYY-mm-ddTHH:MM:SSZ)."
+  (format-time-string "%FT%TZ"))
+
+(defun org-visibility-buffer-file-checksum (&optional buffer)
   "Return checksum for BUFFER file or nil if file does not exist."
   (let* ((buffer (or buffer (current-buffer)))
          (file-name (buffer-file-name buffer)))
@@ -195,8 +199,8 @@ behavior of `org-visibility-include-paths' and
                 (shell-command-to-string (concat "md5 -r " file-name))
               (shell-command-to-string (concat "md5sum " file-name))))))))
 
-(defun org-visibility-set (buffer visible-lines)
-  "Set visibility state for BUFFER to VISIBLE-LINES and update
+(defun org-visibility-set (buffer visible)
+  "Set visibility state record for BUFFER to VISIBLE and update
 `org-visibility-state-file' with new state."
   (let ((data (and (file-exists-p org-visibility-state-file)
                    (ignore-errors
@@ -204,10 +208,11 @@ behavior of `org-visibility-include-paths' and
                        (insert-file-contents org-visibility-state-file)
                        (read (buffer-substring-no-properties (point-min) (point-max)))))))
         (file-name (buffer-file-name buffer))
-        (checksum (buffer-file-checksum buffer)))
+        (date (org-visibility-timestamp))
+        (checksum (org-visibility-buffer-file-checksum buffer)))
     (when file-name
       (setq data (delq (assoc file-name data) data)) ; remove previous value
-      (setq data (append (list (list file-name checksum visible-lines)) data)) ; add new value
+      (setq data (append (list (list file-name date checksum visible)) data)) ; add new value
       (with-temp-file org-visibility-state-file
         (insert (format "%S\n" data)))
       (message "Set visibility state for %s" file-name))))
@@ -220,12 +225,12 @@ behavior of `org-visibility-include-paths' and
                        (insert-file-contents org-visibility-state-file)
                        (read (buffer-substring-no-properties (point-min) (point-max)))))))
         (file-name (buffer-file-name buffer))
-        (checksum (buffer-file-checksum buffer)))
+        (checksum (org-visibility-buffer-file-checksum buffer)))
     (when file-name
       (let ((state (assoc file-name data)))
-        (when (string= (cadr state) checksum)
+        (when (string= (caddr state) checksum)
           (message "Restored visibility state for %s" file-name)
-          (caddr state))))))
+          (cadddr state))))))
 
 (defun org-visibility-save-internal (&optional buffer noerror force)
   "Save visibility snapshot of org BUFFER.
@@ -235,7 +240,7 @@ If NOERROR is non-nil, do not throw errors.
 If FORCE is non-nil, save even if file is not marked as dirty."
   (let ((buffer (or buffer (current-buffer)))
         (file-name (buffer-file-name buffer))
-        (visible-lines '()))
+        (visible '()))
     (with-current-buffer buffer
       (if (not (eq major-mode 'org-mode))
           (unless noerror
@@ -248,9 +253,9 @@ If FORCE is non-nil, save even if file is not marked as dirty."
               (goto-char (point-min))
               (while (not (eobp))
                 (when (not (invisible-p (point)))
-                  (push (point) visible-lines))
+                  (push (point) visible))
                 (forward-visible-line 1)))
-            (org-visibility-set buffer (nreverse visible-lines))
+            (org-visibility-set buffer (nreverse visible))
             (setq org-visibility-dirty nil)))))))
 
 (defun org-visibility-load-internal (&optional buffer noerror)
@@ -265,10 +270,10 @@ If NOERROR is non-nil, do not throw errors."
         (if (not (buffer-file-name buffer))
             (unless noerror
               (error "There is no file associated with this buffer: %S" buffer))
-          (let ((visible-lines (org-visibility-get buffer)))
+          (let ((visible (org-visibility-get buffer)))
             (save-mark-and-excursion
               (outline-hide-sublevels 1)
-              (dolist (x visible-lines)
+              (dolist (x visible)
                 (ignore-errors
                   (goto-char x)
                   (when (invisible-p (point))
