@@ -30,27 +30,32 @@
 ;; loaded.
 ;;
 ;; Hooks are used to persist and restore org tree visibility upon loading and
-;; saving org files.  Files are only considered if they meet one of the
-;; following requirements:
+;; saving org files.  Whether or not a given buffer's file will have its
+;; visibility persisted is determined by the following logic:
 ;;
-;; - They have the buffer local variable `org-visibility' set to t.
+;; Qualification Rules:
 ;;
-;; - They are contained within one of the directories listed in
-;;   `org-visibility-include-paths'.
+;; Files are only considered if their buffer is an `org-mode' buffer and they
+;; meet one of the following requirements:
 ;;
-;; - They match one of the regular expressions listed in
-;;   `org-visibility-include-regexps'.
+;;   - File has buffer local variable `org-visibility' set to t
+;;
+;;   - File is contained within one of the directories listed in
+;;     `org-visibility-include-paths'
+;;
+;;   - File path matches one of the regular expressions listed in
+;;     `org-visibility-include-regexps'
 ;;
 ;; Files are removed from consideration if they meet one of the following
 ;; requirements (overriding the above include logic):
 ;;
-;; - They have the buffer local variable `org-visibility' set to never.
+;;   - File has buffer local variable `org-visibility' set to 'never
 ;;
-;; - They are contained within one of the directories listed in
-;;   `org-visibility-exclude-paths'.
+;;   - File is contained within one of the directories listed in
+;;     `org-visibility-exclude-paths'
 ;;
-;; - They match one of the regular expressions listed in
-;;   `org-visibility-exclude-regexps'.
+;;   - File matches one of the regular expressions listed in
+;;     `org-visibility-exclude-regexps'.
 ;;
 ;; Provides the following interactive functions:
 ;;
@@ -73,6 +78,8 @@
 ;;   ;; list of directories and files to automatically persist and restore visibility state of
 ;;   (setq org-visibility-include-paths `(,(file-truename "~/.emacs.d/init-emacs.org")
 ;;                                        ,(file-truename "~/org"))
+;;   ;; automatically persist all org files regardless of location
+;;   ;;(setq org-visibility-include-regexps '("\\.org\\'"))
 ;;
 ;;   ;; list of directories and files to not persist and restore visibility state of
 ;;   (org-visibility-exclude-paths `(,(file-truename "~/org/old")))
@@ -92,35 +99,34 @@
 ;;     ;; list of directories and files to automatically persist and restore visibility state of
 ;;     (org-visibility-include-paths `(,(file-truename "~/.emacs.d/init-emacs.org")
 ;;                                     ,(file-truename "~/org"))))
+;;     ;; automatically persist all org files regardless of location
+;;     ;;(org-visibility-include-regexps '("\\.org\\'"))
 ;;     ;; list of directories and files to not persist and restore visibility state of
 ;;     (org-visibility-exclude-paths `(,(file-truename "~/org/old")))
 ;;
 ;;; Usage:
 ;;
-;; Visibiliy state is automatically persisted on file save or kill, and
+;; Visibility state is automatically persisted on file save or kill, and
 ;; restored when loaded.  No user intervention is needed.  The user can,
-;; however, call `org-visibility-force-save' to save the current visibiliy
+;; however, call `org-visibility-force-save' to save the current visibility
 ;; state of a buffer before a file save or kill would automatically trigger it
 ;; next.
 ;;
 ;; Interactive commands:
 ;;
-;; The `org-visibility-save' function saves the current buffer's visibility
-;; state if it has been modified or had an `org-cycle' change, and either has
-;; local variable `org-visibility' set to t, is in one of the
-;; `org-visibility-include-paths' paths, or matches one of the
-;; `org-visibility-include-regexps' regular expressions.
+;; The `org-visibility-save' function saves the current buffer's file
+;; visibility state if it has been modified or had an `org-cycle' change, and
+;; matches the above Qualification Rules.
 ;;
-;; The `org-visibility-force-save' function saves the current buffer's
-;; visibility state if it either has local variable `org-visibility' set to t
-;; or is in one of the `org-visibility-include-paths' paths.
+;; The `org-visibility-force-save' function saves the current buffer's file
+;; visibility state if it matches the above Qualification Rules, regardless of
+;; whether the file has been modified.
 ;;
 ;; The `org-visibility-save-all-buffers' function saves the visibility state
-;; for any modified buffers.
+;; for any modified buffer files that match the above Qualification Rules.
 ;;
 ;; The `org-visibility-load' function loads a file and restores its visibility
-;; state if it either has local variable `org-visibility' set to t or is in
-;; one of the `org-visibility-include-paths' paths.
+;; state if it matches the above Qualification Rules.
 ;;
 ;; The `org-visibility-clean' function removes all missing or untracked files
 ;; from `org-visibility-state-file'.
@@ -134,7 +140,8 @@
 
 ;;; Code:
 
-(defcustom org-visibility-state-file `,(expand-file-name ".org-visibility" user-emacs-directory)
+(defcustom org-visibility-state-file
+  `,(expand-file-name ".org-visibility" user-emacs-directory)
   "File used to store org visibility state."
   :type 'string
   :group 'org-visibility)
@@ -147,7 +154,10 @@ restore visibility state of when saved and loaded."
 
 (defcustom org-visibility-exclude-paths '()
   "List of directories and files to not persist and restore
-visibility state of when saved and loaded."
+visibility state of when saved and loaded.
+
+Overrides `org-visibility-include-paths' and
+`org-visibility-include-regexps'."
   :type 'list
   :group 'org-visibility)
 
@@ -158,16 +168,38 @@ directories and files when saved and loaded."
   :type 'list
   :group 'org-visibility)
 
-(defcustom org-visibility-include-regexps '()
+(defcustom org-visibility-exclude-regexps '()
   "List of regular expressions that, when matched, will
-automatically persist and restore visibility state of matching
-directories and files when saved and loaded."
+automatically not persist and restore visibility state of
+matching directories and files when saved and loaded.
+
+Overrides `org-visibility-include-paths' and
+`org-visibility-include-regexps'."
   :type 'list
+  :group 'org-visibility)
+
+(defcustom org-visibility-maximum-tracked-files nil
+  "Maximum number of files to track the visibility state of.
+
+When non-nil and persisting the state of a new org file causes
+this number to be exceeded, the oldest tracked file will be
+removed from the state file."
+  :type 'number
+  :group 'org-visibility)
+
+(defcustom org-visibility-maximum-tracked-days nil
+  "Maximum number of days without modification to track file
+visibility state of.
+
+When non-nil, file states in the state file that have not been
+modified for this number of days will have their state
+information removed."
+  :type 'number
   :group 'org-visibility)
 
 (defvar-local org-visibility
   nil
-  "File local varible to determine if buffer file visibility
+  "File local variable to determine if buffer file visibility
 state should be automatically persisted and restored.
 
 If nil, this setting has no effect on determining buffer file
@@ -177,9 +209,11 @@ If t, buffer file should have its visibility state automatically
 persisted and restored.
 
 If 'never, buffer file should never have its visibility state
-automatically persisted and restored.  (This overrides the
-behavior of `org-visibility-include-paths' and
-`org-visibility-include-regexps'.)")
+automatically persisted and restored.
+
+Overrides `org-visibility-include-paths',
+`org-visibility-exclude-paths', `org-visibility-include-regexps',
+and `org-visibility-exclude-regexps'.)")
 
 (defvar-local org-visibility-dirty
   nil
@@ -188,6 +222,10 @@ behavior of `org-visibility-include-paths' and
 (defun org-visibility-timestamp ()
   "Return timestamp in ISO 8601 format (YYYY-mm-ddTHH:MM:SSZ)."
   (format-time-string "%FT%TZ"))
+
+(defun org-visibility-timestamp-to-epoch (timestamp)
+  "Return epoch (seconds since 1970-01-01) from TIMESTAMP."
+  (truncate (float-time (date-to-time timestamp))))
 
 (defun org-visibility-buffer-file-checksum (&optional buffer)
   "Return checksum for BUFFER file or nil if file does not exist."
@@ -281,32 +319,50 @@ If NOERROR is non-nil, do not throw errors."
                     (org-cycle)))))
             (setq org-visibility-dirty nil)))))))
 
-(defun org-visibility-check-file-path (file paths)
-  "Return whether FILE is in one of the PATHS."
-  (cl-do ((paths paths (cdr paths))
-          (match nil))
-      ((or (null paths) match) match)
-    (let ((path (car paths))
-          (file (file-truename file)))
-      (when (>= (length file) (length path))
-        (let ((part (substring file 0 (length path))))
-          (when (string= part path)
-            (setq match t)))))))
+(defun org-visibility-check-file-path (file-name paths)
+  "Return whether FILE-NAME is in one of the PATHS."
+  (let ((file-name (file-truename file-name)))
+    (cl-do ((paths paths (cdr paths))
+            (match nil))
+        ((or (null paths) match) match)
+      (let ((path (car paths)))
+        (when (>= (length file-name) (length path))
+          (let ((part (substring file-name 0 (length path))))
+            (when (string= part path)
+              (setq match t))))))))
 
-(defun org-visibility-check-file-include-exclude-paths (file)
-  "Return whether FILE is in one of the paths in
-`org-visibility-include-paths' and not in one of the paths in
-`org-visibility-exclude-paths'."
-  (and (org-visibility-check-file-path file org-visibility-include-paths)
-       (not (org-visibility-check-file-path file org-visibility-exclude-paths))))
+(defun org-visibility-check-file-regexp (file-name regexps)
+  "Return whether FILE-NAME matches one of the REGEXPS."
+  (let ((file-name (file-truename file-name)))
+    (cl-do ((regexps regexps (cdr regexps))
+            (match nil))
+        ((or (null regexps) match) match)
+      (let ((regexp (car regexps)))
+        (when (string-match regexp file-name)
+          (setq match t))))))
+
+(defun org-visibility-check-file-include-exclude-paths-and-regexps (file-name)
+  "Return whether FILE-NAME is in one of the paths listed in
+`org-visibility-include-paths' or matches a regular expression
+listed in `org-visibility-include-regexps', and FILE-NAME is not in
+one of the paths listed in `org-visibility-exclude-paths' or
+matches a regular expression listed in
+`org-visibility-exclude-regexps'."
+  (and (or (org-visibility-check-file-path file-name org-visibility-include-paths)
+           (org-visibility-check-file-regexp file-name org-visibility-include-regexps))
+       (not (or (org-visibility-check-file-path file-name org-visibility-exclude-paths)
+                (org-visibility-check-file-regexp file-name org-visibility-exclude-regexps)))))
 
 (defun org-visibility-check-buffer-file-path (buffer)
-  "Return whether BUFFER's file is in one of the paths in
-`org-visibility-include-paths' and not in one of the paths in
-`org-visibility-exclude-paths'."
-  (let ((file (buffer-file-name buffer)))
-    (if file
-        (org-visibility-check-file-include-exclude-paths file)
+  "Return whether BUFFER's file is in one of the paths listed in
+`org-visibility-include-paths' or matches a regular expression
+listed in `org-visibility-include-regexps', and BUFFER's file is
+not in one of the paths listed in `org-visibility-exclude-paths'
+or matches a regular expression listed in
+`org-visibility-exclude-regexps'."
+  (let ((file-name (buffer-file-name buffer)))
+    (if file-name
+        (org-visibility-check-file-include-exclude-paths-and-regexps file-name)
       nil)))
 
 (defun org-visibility-check-buffer-file-persistance (buffer)
@@ -329,9 +385,9 @@ and restored."
                        (read (buffer-substring-no-properties (point-min) (point-max))))))))
     (setq data (cl-remove-if-not
                 (lambda (x)
-                  (let ((file (car x)))
-                    (and (file-exists-p file)
-                         (org-visibility-check-file-include-exclude-paths file))))
+                  (let ((file-name (car x)))
+                    (and (file-exists-p file-name)
+                         (org-visibility-check-file-include-exclude-paths-and-regexps file-name))))
                 data))
 
     (with-temp-file org-visibility-state-file
