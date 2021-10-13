@@ -369,7 +369,7 @@ or matches a regular expression listed in
   "Return whether BUFFER's file's visibility should be persisted
 and restored."
   (with-current-buffer buffer
-    (case (if (boundp 'org-visibility) org-visibility nil)
+    (cl-case (if (boundp 'org-visibility) org-visibility nil)
       ('nil (org-visibility-check-buffer-file-path buffer))
       ('never nil)
       (t t))))
@@ -425,8 +425,9 @@ and restored."
 
 (defun org-visibility-dirty ()
   "Set visibility dirty flag."
-  (when (and (org-visibility-check-buffer-file-persistance (current-buffer))
-             (eq major-mode 'org-mode))
+  (when (and (eq major-mode 'org-mode)
+             (not org-visibility-dirty)
+             (org-visibility-check-buffer-file-persistance (current-buffer)))
     (setq org-visibility-dirty t)))
 
 (defun org-visibility-dirty-org-cycle (state)
