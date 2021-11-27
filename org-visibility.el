@@ -82,7 +82,15 @@
 ;;   ;;(setq org-visibility-include-regexps '("\\.org\\'"))
 ;;
 ;;   ;; list of directories and files to not persist and restore visibility state of
-;;   (org-visibility-exclude-paths `(,(file-truename "~/org/old")))
+;;   ;;(org-visibility-exclude-paths `(,(file-truename "~/org/old")))
+;;
+;;   ;; optional maximum number of files to keep track of
+;;   ;; oldest files will be removed from the sate file first
+;;   ;;(setq org-visibility-maximum-tracked-files 100)
+;;
+;;   ;; optional maximum number of days (since saved) to keep track of
+;;   ;; files older than this number of days will be removed from the state file
+;;   ;;(setq org-visibility-maximum-tracked-days 180)
 ;;
 ;;   (require 'org-visibility)
 ;;
@@ -102,7 +110,13 @@
 ;;     ;; automatically persist all org files regardless of location
 ;;     ;;(org-visibility-include-regexps '("\\.org\\'"))
 ;;     ;; list of directories and files to not persist and restore visibility state of
-;;     (org-visibility-exclude-paths `(,(file-truename "~/org/old")))
+;;     ;;(org-visibility-exclude-paths `(,(file-truename "~/org/old")))
+;;     ;; optional maximum number of files to keep track of
+;;     ;; oldest files will be removed from the sate file first
+;;     ;;(setq org-visibility-maximum-tracked-files 100)
+;;     ;; optional maximum number of days (since saved) to keep track of
+;;     ;; files older than this number of days will be removed from the state file
+;;     ;;(setq org-visibility-maximum-tracked-days 180)
 ;;
 ;;; Usage:
 ;;
@@ -237,6 +251,27 @@ and `org-visibility-exclude-regexps'.)")
                 (shell-command-to-string (concat "md5 -r " file-name))
               (shell-command-to-string (concat "md5sum " file-name))))))))
 
+(defun org-visibility-remove-over-maximum-tracked-files (data)
+  "Remove oldest files over maximum file count from DATA if
+`org-visibility-maximum-tracked-files' is non-nil and exceeded."
+  (when (and org-visibility-maximum-tracked-files
+             (plusp org-visibility-maximum-tracked-files))
+    (while (> (length data) org-visibility-maximum-tracked-files)
+      (setq data (nreverse (cdr (nreverse data))))))
+  data)
+
+(defun org-visibility-remove-over-maximum-tracked-days (data)
+  "Remove all files over maximum day count from DATA if
+`org-visibility-maximum-tracked-days' is non-nil and exceeded."
+  (if (and org-visibility-maximum-tracked-days
+           (plusp org-visibility-maximum-tracked-days))
+      (let ((day (- (time-to-days (current-time)) org-visibility-maximum-tracked-days)))
+        (cl-do ((d data (cdr d))
+                (n 0 (1+ n)))
+            ((< (time-to-days (date-to-time (cadar d))) day)
+             (subseq data 0 n))))
+    data))
+
 (defun org-visibility-set (buffer visible)
   "Set visibility state record for BUFFER to VISIBLE and update
 `org-visibility-state-file' with new state."
@@ -251,6 +286,8 @@ and `org-visibility-exclude-regexps'.)")
     (when file-name
       (setq data (delq (assoc file-name data) data)) ; remove previous value
       (setq data (append (list (list file-name date checksum visible)) data)) ; add new value
+      (setq data (org-visibility-remove-over-maximum-tracked-files data)) ; remove old files over maximum count
+      ;;(setq data (org-visibility-remove-over-maximum-tracked-days data)) ; remove old files over maximum days
       (with-temp-file org-visibility-state-file
         (insert (format "%S\n" data)))
       (message "Set visibility state for %s" file-name))))
