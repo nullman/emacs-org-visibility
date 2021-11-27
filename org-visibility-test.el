@@ -262,7 +262,7 @@ set to t."
        errors))))
 
 (defun org-visibility-test-test-no-persistence-with-include-exclude-regexps ()
-  "Test no visibility persistence using include and exclude regular expressions.."
+  "Test no visibility persistence using include and exclude regular expressions."
   (let (errors)
     (org-visibility-test-run-test
      (lambda ()
@@ -280,6 +280,92 @@ set to t."
          (kill-buffer (current-buffer))
          (delete-file file))
        errors))))
+
+(defun org-visibility-test-test-no-persistence-with-fundamental-mode-and-local-var-t ()
+  "Test no visibility persistence using `fundamental-mode' and
+local var `org-visibility' set to t."
+  (let (errors)
+    (org-visibility-test-run-test
+     (lambda ()
+       (let ((file (org-visibility-test-create-org-file "t")))
+         (find-file file)
+         (outline-hide-sublevels 1)
+         (forward-line 4)
+         (org-cycle)
+         (push (org-visibility-test-check-visible-lines '(1 5 6 9 11)) errors)
+         (fundamental-mode)
+         (kill-buffer (current-buffer))
+         (find-file file)
+         (push (org-visibility-test-check-visible-lines '(1 5 11)) errors)
+         (kill-buffer (current-buffer))
+         (delete-file file))
+       errors))))
+
+(defun org-visibility-test-test-no-persistence-with-fundamental-mode-and-include-paths ()
+  "Test no visibility persistence using `fundamental-mode' and
+include paths."
+  (let (errors)
+    (org-visibility-test-run-test
+     (lambda ()
+       (let* ((file (org-visibility-test-create-org-file))
+              (org-visibility-include-paths (list file)))
+         (find-file file)
+         (outline-hide-sublevels 1)
+         (forward-line 4)
+         (org-cycle)
+         (push (org-visibility-test-check-visible-lines '(1 5 6 9 11)) errors)
+         (fundamental-mode)
+         (kill-buffer (current-buffer))
+         (find-file file)
+         (push (org-visibility-test-check-visible-lines '(1 5 11)) errors)
+         (kill-buffer (current-buffer))
+         (delete-file file))
+       errors))))
+
+(defun org-visibility-test-test-no-persistence-with-fundamental-mode-and-include-regexps ()
+  "Test no visibility persistence using `fundamental-mode' and
+include regular expressions."
+  (let (errors)
+    (org-visibility-test-run-test
+     (lambda ()
+       (let* ((file (org-visibility-test-create-org-file))
+              (org-visibility-include-regexps (list "\\.org\\'")))
+         (find-file file)
+         (outline-hide-sublevels 1)
+         (forward-line 4)
+         (org-cycle)
+         (push (org-visibility-test-check-visible-lines '(1 5 6 9 11)) errors)
+         (fundamental-mode)
+         (kill-buffer (current-buffer))
+         (find-file file)
+         (push (org-visibility-test-check-visible-lines '(1 5 11)) errors)
+         (kill-buffer (current-buffer))
+         (delete-file file))
+       errors))))
+
+(defun org-visibility-test-test-save-error-with-fundamental-mode-and-local-var-t ()
+  "Test save error thrown using `fundamental-mode' and local var
+`org-visibility' set to t."
+  (let (errors)
+    (org-visibility-test-run-test
+     (lambda ()
+       (let ((file (org-visibility-test-create-org-file "t"))
+             (error '("Expected `org-visibility-save' to throw an error")))
+         (find-file file)
+         (outline-hide-sublevels 1)
+         (forward-line 4)
+         (org-cycle)
+         (push (org-visibility-test-check-visible-lines '(1 5 6 9 11)) errors)
+         (fundamental-mode)
+         (condition-case err
+             (org-visibility-save nil :force)
+           ('error
+            (setq error nil)))
+         (kill-buffer (current-buffer))
+         (delete-file file)
+         (if error
+             (nreverse (push error errors))
+           errors))))))
 
 (defun org-visibility-test-test-clean-remove-file ()
   "Test `org-visibility-clean'."
@@ -444,9 +530,13 @@ set to t."
   (org-visibility-test-test-no-persistence-with-local-var-never)
   (org-visibility-test-test-persistence-with-local-var-t)
   (org-visibility-test-test-persistence-with-include-paths)
-  (org-visibility-test-test-no-persistence-with-include-exclude-paths)
   (org-visibility-test-test-persistence-with-include-regexps)
+  (org-visibility-test-test-no-persistence-with-include-exclude-paths)
   (org-visibility-test-test-no-persistence-with-include-exclude-regexps)
+  (org-visibility-test-test-no-persistence-with-fundamental-mode-and-local-var-t)
+  (org-visibility-test-test-no-persistence-with-fundamental-mode-and-include-paths)
+  (org-visibility-test-test-no-persistence-with-fundamental-mode-and-include-regexps)
+  (org-visibility-test-test-save-error-with-fundamental-mode-and-local-var-t)
   (org-visibility-test-test-clean-remove-file)
   (org-visibility-test-test-clean-remove-include-path)
   (org-visibility-test-test-force-save)

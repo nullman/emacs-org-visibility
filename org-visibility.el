@@ -401,6 +401,10 @@ and restored."
   (when (org-visibility-check-buffer-file-persistance (current-buffer))
     (org-visibility-save-internal (current-buffer) noerror force)))
 
+(defun org-visibility-save-noerror ()
+  "Save visibility state if buffer has been modified, ignoring errors."
+  (org-visibility-save :noerror))
+
 ;;;###autoload
 (defun org-visibility-force-save ()
   "Save visibility state even if buffer has not been modified."
@@ -409,7 +413,7 @@ and restored."
 
 ;;;###autoload
 (defun org-visibility-save-all-buffers (&optional force)
-  "Save visibility state for any modified buffers."
+  "Save visibility state for any modified buffers, ignoring errors."
   (interactive)
   (dolist (buffer (buffer-list))
     (when (org-visibility-check-buffer-file-persistance buffer)
@@ -417,7 +421,7 @@ and restored."
 
 ;;;###autoload
 (defun org-visibility-load (&optional file)
-  "Load FILE or `current-buffer' and restore its visibility state."
+  "Load FILE or `current-buffer' and restore its visibility state, ignoring errors."
   (interactive)
   (let ((buffer (if file (get-file-buffer file) (current-buffer))))
     (when (and buffer (org-visibility-check-buffer-file-persistance buffer))
@@ -440,8 +444,8 @@ and restored."
 (defun org-visibility-enable-hooks ()
   "Helper function to enable all `org-visibility' hooks."
   (interactive)
-  (add-hook 'after-save-hook #'org-visibility-save :append)
-  (add-hook 'kill-buffer-hook #'org-visibility-save :append)
+  (add-hook 'after-save-hook #'org-visibility-save-noerror :append)
+  (add-hook 'kill-buffer-hook #'org-visibility-save-noerror :append)
   (add-hook 'kill-emacs-hook #'org-visibility-save-all-buffers :append)
   (add-hook 'find-file-hook #'org-visibility-load :append)
   (add-hook 'first-change-hook #'org-visibility-dirty :append)
@@ -451,8 +455,8 @@ and restored."
 (defun org-visibility-disable-hooks ()
   "Helper function to disable all `org-visibility' hooks."
   (interactive)
-  (remove-hook 'after-save-hook #'org-visibility-save)
-  (remove-hook 'kill-buffer-hook #'org-visibility-save)
+  (remove-hook 'after-save-hook #'org-visibility-save-noerror)
+  (remove-hook 'kill-buffer-hook #'org-visibility-save-noerror)
   (remove-hook 'kill-emacs-hook #'org-visibility-save-all-buffers)
   (remove-hook 'find-file-hook #'org-visibility-load)
   (remove-hook 'first-change-hook #'org-visibility-dirty)
