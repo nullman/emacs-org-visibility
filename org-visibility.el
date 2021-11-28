@@ -235,7 +235,7 @@ and `org-visibility-exclude-regexps'.)")
 
 (defun org-visibility-timestamp ()
   "Return timestamp in ISO 8601 format (YYYY-mm-ddTHH:MM:SSZ)."
-  (format-time-string "%FT%TZ"))
+  (format-time-string "%FT%T%Z"))
 
 (defun org-visibility-timestamp-to-epoch (timestamp)
   "Return epoch (seconds since 1970-01-01) from TIMESTAMP."
@@ -287,7 +287,7 @@ and `org-visibility-exclude-regexps'.)")
       (setq data (delq (assoc file-name data) data)) ; remove previous value
       (setq data (append (list (list file-name date checksum visible)) data)) ; add new value
       (setq data (org-visibility-remove-over-maximum-tracked-files data)) ; remove old files over maximum count
-      ;;(setq data (org-visibility-remove-over-maximum-tracked-days data)) ; remove old files over maximum days
+      (setq data (org-visibility-remove-over-maximum-tracked-days data)) ; remove old files over maximum days
       (with-temp-file org-visibility-state-file
         (insert (format "%S\n" data)))
       (message "Set visibility state for %s" file-name))))
