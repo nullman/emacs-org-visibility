@@ -156,6 +156,7 @@
 
 (require 'cl-lib)
 (require 'outline)
+(require 'org-macs)
 
 (defcustom org-visibility-state-file
   `,(expand-file-name ".org-visibility" user-emacs-directory)
@@ -353,10 +354,10 @@ If NOERROR is non-nil, do not throw errors."
               (outline-hide-sublevels 1)
               (dolist (x visible)
                 (ignore-errors
-                  (goto-char x)
-                  (when (invisible-p (point))
-                    (forward-char -1)
-                    (org-cycle)))))
+                  (when (> x 1)
+                    (goto-char x)
+                    (when (invisible-p (1- (point)))
+                      (org-flag-region (1- (point-at-bol)) (point-at-eol) nil 'outline))))))
             (setq org-visibility-dirty nil)))))))
 
 (defun org-visibility-check-file-path (file-name paths)

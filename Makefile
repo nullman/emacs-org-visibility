@@ -14,5 +14,4 @@ clean:
 	@rm -f *.elc
 
 test: all
-#	@${EMACS} -batch -L . -l *-test.el -f ert-run-tests-batch-and-exit
-	@${EMACS} -batch -L . -l *-test.el -f org-visibility-test-run-all-tests-and-exit
+	@${EMACS} -batch -L . -l *-test.el -f ert-run-tests-batch-and-exit
