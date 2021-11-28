@@ -45,7 +45,7 @@
               org-visibility-include-paths include-paths
               org-visibility-exclude-paths exclude-paths)
         (delete-file temp-state-file)))
-    (assert (not errors) :show-args)))
+    (cl-assert (not errors) :show-args)))
 
 (defun org-visibility-test-create-org-file (&optional local-var-visbility)
   "Create temporary `org-mode' file to test with.
@@ -768,6 +768,10 @@ include regular expressions."
   (org-visibility-test-test-dirty)
   (org-visibility-test-test-dirty-org-cycle))
 
-(org-visibility-test-run-all-tests)
+(defun org-visibility-test-run-all-tests-and-exit ()
+  "Run all org-visibility unit tests and exit Emacs."
+  (interactive)
+  (org-visibility-test-run-all-tests)
+  (kill-emacs))
 
 ;;; org-visibility-test.el ends here

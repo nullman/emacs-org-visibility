@@ -11,3 +11,5 @@ information.
 Unit tests can be run by [[file:org-visibility-test.el][loading the test file]] and calling =eval-buffer=.
 
 License:  [[file:LICENSE][GNU General Public License]]
+
+Copyright (C) 2021 Kyle W T Sherman

@@ -154,6 +154,9 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+(require 'outline)
+
 (defcustom org-visibility-state-file
   `,(expand-file-name ".org-visibility" user-emacs-directory)
   "File used to store org visibility state."
@@ -247,7 +250,7 @@ and `org-visibility-exclude-regexps'.)")
          (file-name (buffer-file-name buffer)))
     (ignore-errors
       (car (split-string
-            (if window-system-mac
+            (if (string= window-system "ns")
                 (shell-command-to-string (concat "md5 -r " file-name))
               (shell-command-to-string (concat "md5sum " file-name))))))))
 
@@ -255,7 +258,7 @@ and `org-visibility-exclude-regexps'.)")
   "Remove oldest files over maximum file count from DATA if
 `org-visibility-maximum-tracked-files' is non-nil and exceeded."
   (when (and org-visibility-maximum-tracked-files
-             (plusp org-visibility-maximum-tracked-files))
+             (cl-plusp org-visibility-maximum-tracked-files))
     (while (> (length data) org-visibility-maximum-tracked-files)
       (setq data (nreverse (cdr (nreverse data))))))
   data)
@@ -264,12 +267,12 @@ and `org-visibility-exclude-regexps'.)")
   "Remove all files over maximum day count from DATA if
 `org-visibility-maximum-tracked-days' is non-nil and exceeded."
   (if (and org-visibility-maximum-tracked-days
-           (plusp org-visibility-maximum-tracked-days))
-      (let ((day (- (time-to-days (current-time)) org-visibility-maximum-tracked-days)))
-        (cl-do ((d data (cdr d))
-                (n 0 (1+ n)))
-            ((< (time-to-days (date-to-time (cadar d))) day)
-             (subseq data 0 n))))
+           (cl-plusp org-visibility-maximum-tracked-days))
+      (cl-do ((day (- (time-to-days (current-time)) org-visibility-maximum-tracked-days))
+              (d data (cdr d))
+              (n 0 (1+ n)))
+          ((< (time-to-days (date-to-time (cadar d))) day)
+           (cl-subseq data 0 n)))
     data))
 
 (defun org-visibility-set (buffer visible)
