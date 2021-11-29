@@ -63,7 +63,7 @@
 ;;   `org-visibility-force-save'       - Save even if buffer has not been modified
 ;;   `org-visibility-save-all-buffers' - Save all buffers that qualify
 ;;   `org-visibility-load'             - Load a file and restore its visibility state
-;;   `org-visibility-clean'            - Clean up `org-visibility-state-file'
+;;   `org-visibility-clean'            - Cleanup `org-visibility-state-file'
 ;;   `org-visibility-enable-hooks'     - Enable all hooks
 ;;   `org-visibility-disable-hooks'    - Disable all hooks
 ;;
@@ -82,7 +82,7 @@
 ;;   ;;(setq org-visibility-include-regexps '("\\.org\\'"))
 ;;
 ;;   ;; list of directories and files to not persist and restore visibility state of
-;;   ;;(org-visibility-exclude-paths `(,(file-truename "~/org/old")))
+;;   ;;(setq org-visibility-exclude-paths `(,(file-truename "~/org/old")))
 ;;
 ;;   ;; optional maximum number of files to keep track of
 ;;   ;; oldest files will be removed from the sate file first
@@ -113,10 +113,10 @@
 ;;     ;;(org-visibility-exclude-paths `(,(file-truename "~/org/old")))
 ;;     ;; optional maximum number of files to keep track of
 ;;     ;; oldest files will be removed from the sate file first
-;;     ;;(setq org-visibility-maximum-tracked-files 100)
+;;     ;;(org-visibility-maximum-tracked-files 100)
 ;;     ;; optional maximum number of days (since saved) to keep track of
 ;;     ;; files older than this number of days will be removed from the state file
-;;     ;;(setq org-visibility-maximum-tracked-days 180)
+;;     ;;(org-visibility-maximum-tracked-days 180)
 ;;
 ;;; Usage:
 ;;

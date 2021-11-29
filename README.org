@@ -8,8 +8,12 @@ file is loaded.
 See the [[file:org-visibility.el::;;; Installation][Installation]] and [[file:org-visibility.el::;;; Usage][Usage]] sections in the [[file:org-visibility.el][source code]] for more
 information.
 
-Unit tests can be run by [[file:org-visibility-test.el][loading the test file]] and calling =eval-buffer=.
+Build with =make=.
 
-License:  [[file:LICENSE][GNU General Public License]]
+Clean with =make clean=.
+
+Run tests with =make test=.
 
 Copyright (C) 2021 Kyle W T Sherman
+
+License:  [[file:LICENSE][GNU General Public License]]
