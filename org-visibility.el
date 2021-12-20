@@ -2,7 +2,7 @@
 ;;
 ;;; Copyright (C) 2021 Kyle W T Sherman
 ;;
-;; Author:   Kyle W T Sherman <kylewsherman at gmail dot com>
+;; Author:   Kyle W T Sherman <kylewsherman@gmail.com>
 ;; Created:  2021-07-17
 ;; Version:  1.0
 ;; Keywords: org-mode outline visibility persistence
