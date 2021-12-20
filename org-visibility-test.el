@@ -34,6 +34,7 @@
 
 (defun org-visibility-test-run-test (test files)
   "Setup test environment, run TEST using FILES, then restore environment."
+  (org-visibility-enable-hooks)
   (let ((org-startup-folded 'showeverything)
         (org-odd-levels-only t)
         (enable-local-variables :all)
