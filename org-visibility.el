@@ -3,7 +3,7 @@
 ;;; Copyright (C) 2021 Kyle W T Sherman
 ;;
 ;; Author: Kyle W T Sherman <kylewsherman@gmail.com>
-;; URL: https://gitlab.com/kylesherman/emacs-org-visibility
+;; URL: https://github.com/nullman/emacs-org-visibility
 ;; Created: 2021-07-17
 ;; Version: 1.0
 ;; Keywords: outlines convenience
