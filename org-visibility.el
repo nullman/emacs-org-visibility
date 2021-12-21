@@ -187,6 +187,11 @@ SPEC is the invisibility spec, as a symbol."
   (unless (fboundp 'org-visibility--org-flag-region)
     (defalias 'org-visibility--org-flag-region 'org-flag-region)))
 
+(defgroup org-visibility nil
+  "Persistent org tree visibility."
+  :group 'org
+  :prefix 'org-visibility)
+
 (defcustom org-visibility-state-file
   `,(expand-file-name ".org-visibility" user-emacs-directory)
   "File used to store org visibility state."
