@@ -190,7 +190,7 @@ SPEC is the invisibility spec, as a symbol."
 (defgroup org-visibility nil
   "Persistent org tree visibility."
   :group 'org
-  :prefix 'org-visibility)
+  :prefix "org-visibility-")
 
 (defcustom org-visibility-state-file
   `,(expand-file-name ".org-visibility" user-emacs-directory)
@@ -203,7 +203,7 @@ SPEC is the invisibility spec, as a symbol."
 
 These directories and files will persist their visibility state
 when saved and loaded."
-  :type 'list
+  :type '(repeat (choice string))
   :group 'org-visibility)
 
 (defcustom org-visibility-exclude-paths '()
@@ -214,7 +214,7 @@ state.
 
 Overrides `org-visibility-include-paths' and
 `org-visibility-include-regexps'."
-  :type 'list
+  :type '(repeat (choice string))
   :group 'org-visibility)
 
 (defcustom org-visibility-include-regexps '()
@@ -222,7 +222,7 @@ Overrides `org-visibility-include-paths' and
 
 The directories and files that match these regular expressions
 will persist their visibility state when saved and loaded."
-  :type 'list
+  :type '(repeat (choice regexp))
   :group 'org-visibility)
 
 (defcustom org-visibility-exclude-regexps '()
@@ -233,7 +233,7 @@ will not persist their visibility state.
 
 Overrides `org-visibility-include-paths' and
 `org-visibility-include-regexps'."
-  :type 'list
+  :type '(repeat (choice regexp))
   :group 'org-visibility)
 
 (defcustom org-visibility-maximum-tracked-files nil
