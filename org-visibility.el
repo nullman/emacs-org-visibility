@@ -7,7 +7,7 @@
 ;; Created: 2021-07-17
 ;; Version: 1.0
 ;; Keywords: outlines convenience
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "27.1"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -166,26 +166,6 @@
 (require 'cl-lib)
 (require 'outline)
 (require 'org-macs)
-
-;; backwards compatability
-(eval-and-compile
-  ;; added in Emacs 27.1
-  (unless (fboundp 'org-flag-region)
-    (defun org-visibility--org-flag-region (from to flag spec)
-      "Hide or show lines from FROM to TO, according to FLAG.
-SPEC is the invisibility spec, as a symbol."
-      (remove-overlays from to 'invisible spec)
-      ;; Use `front-advance' since text right before to the beginning of
-      ;; the overlay belongs to the visible line than to the contents.
-      (when flag
-        (let ((o (make-overlay from to nil 'front-advance)))
-          (overlay-put o 'evaporate t)
-          (overlay-put o 'invisible spec)
-          (overlay-put o 'isearch-open-invisible
-                       (lambda (&rest _) (org-show-context 'isearch)))))))
-
-  (unless (fboundp 'org-visibility--org-flag-region)
-    (defalias 'org-visibility--org-flag-region 'org-flag-region)))
 
 (defgroup org-visibility nil
   "Persistent org tree visibility."
@@ -404,8 +384,7 @@ If NOERROR is non-nil, do not throw errors."
                   (when (> x 1)
                     (goto-char x)
                     (when (invisible-p (1- (point)))
-                      (org-visibility--org-flag-region
-                       (1- (point-at-bol)) (point-at-eol) nil 'outline))))))
+                      (org-flag-region (1- (point-at-bol)) (point-at-eol) nil 'outline))))))
             (setq org-visibility-dirty nil)))))))
 
 (defun org-visibility-check-file-path (file-name paths)
