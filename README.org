@@ -7,7 +7,7 @@ file is loaded.
 
 Emacs version 27.1 or later is required.
 
-See the [[file:org-visibility.el::;;; Installation][Installation]] and [[file:org-visibility.el::;;; Usage][Usage]] sections in the [[file:org-visibility.el][source code]] for more
+See the [[file:org-visibility.el::;; Installation][Installation]] and [[file:org-visibility.el::;; Usage][Usage]] sections in the [[file:org-visibility.el][source code]] for more
 information.
 
 Build with =make=.
