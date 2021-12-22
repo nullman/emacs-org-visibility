@@ -70,7 +70,7 @@
 ;;   `org-visibility-enable-hooks'     - Enable all hooks
 ;;   `org-visibility-disable-hooks'    - Disable all hooks
 ;;
-;;; Installation:
+;; Installation:
 ;;
 ;; Put `org-visibility.el' where you keep your elisp files and add something
 ;; like the following to your .emacs file:
@@ -127,7 +127,7 @@
 ;;     ;; enable all hooks (recommended)
 ;;     (org-visibility-enable-hooks))
 ;;
-;;; Usage:
+;; Usage:
 ;;
 ;; As long as `org-visibility-enable-hooks' has been called, visibility state
 ;; is automatically persisted on file save or kill, and restored when loaded.
