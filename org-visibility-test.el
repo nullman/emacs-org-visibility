@@ -2,8 +2,8 @@
 ;;
 ;;; Copyright (C) 2021 Kyle W T Sherman
 ;;
-;; Author:   Kyle W T Sherman <kylewsherman@gmail.com>
-;; Created:  2021-07-17
+;; Author: Kyle W T Sherman <kylewsherman@gmail.com>
+;; Created: 2021-07-17
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
