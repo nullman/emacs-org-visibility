@@ -8,7 +8,7 @@ ELCFILES = $(addsuffix .elc, $(basename $(wildcard *.el)))
 
 all: $(ELCFILES)
 
-%.elc : %.el
+%.elc: %.el
 > @echo Compiling $<
 > @${EMACS} -batch -q -no-site-file -L . -f batch-byte-compile $<
 
