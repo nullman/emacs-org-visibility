@@ -263,15 +263,9 @@ and `org-visibility-exclude-regexps'.)")
   "Return epoch (seconds since 1970-01-01) from TIMESTAMP."
   (truncate (float-time (date-to-time timestamp))))
 
-(defun org-visibility-buffer-file-checksum (&optional buffer)
-  "Return checksum for BUFFER file or nil if file does not exist."
-  (let* ((buffer (or buffer (current-buffer)))
-         (file-name (buffer-file-name buffer)))
-    (ignore-errors
-      (car (split-string
-            (if (string= window-system "ns")
-                (shell-command-to-string (concat "md5 -r " file-name))
-              (shell-command-to-string (concat "md5sum " file-name))))))))
+(defun org-visibility-buffer-checksum (&optional buffer)
+  "Return checksum for BUFFER."
+  (secure-hash 'md5 (or buffer (current-buffer))))
 
 (defun org-visibility-remove-over-maximum-tracked-files (data)
   "Remove oldest files over maximum file count from DATA.
@@ -310,7 +304,7 @@ Set visibility state record for BUFFER to VISIBLE and update
                        (read (buffer-substring-no-properties (point-min) (point-max)))))))
         (file-name (buffer-file-name buffer))
         (date (org-visibility-timestamp))
-        (checksum (org-visibility-buffer-file-checksum buffer)))
+        (checksum (org-visibility-buffer-checksum buffer)))
     (when file-name
       (setq data (delq (assoc file-name data) data)) ; remove previous value
       (setq data (append (list (list file-name date checksum visible)) data)) ; add new value
@@ -331,7 +325,7 @@ Return visibility state for BUFFER if found in
                        (insert-file-contents org-visibility-state-file)
                        (read (buffer-substring-no-properties (point-min) (point-max)))))))
         (file-name (buffer-file-name buffer))
-        (checksum (org-visibility-buffer-file-checksum buffer)))
+        (checksum (org-visibility-buffer-checksum buffer)))
     (when file-name
       (let ((state (assoc file-name data)))
         (when (string= (caddr state) checksum)
