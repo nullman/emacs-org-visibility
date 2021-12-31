@@ -1,6 +1,6 @@
 ;;; org-visibility-test.el --- Test org-visibility.el -*- lexical-binding: t; no-byte-compile: t; -*-
 ;;
-;;; Copyright (C) 2021 Kyle W T Sherman
+;;; Copyright (C) 2022 Kyle W T Sherman
 ;;
 ;; Author: Kyle W T Sherman <kylewsherman@gmail.com>
 ;; Created: 2021-07-17

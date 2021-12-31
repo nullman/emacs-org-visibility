@@ -20,6 +20,6 @@
 
   Run tests with =make test=.
 
-  Copyright (C) 2021 Kyle W T Sherman
+  Copyright (C) 2022 Kyle W T Sherman
 
   License:  [[file:LICENSE][GNU General Public License 2]]

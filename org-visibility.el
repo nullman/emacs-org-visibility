@@ -1,11 +1,11 @@
 ;;; org-visibility.el --- Persistent org tree visibility -*- lexical-binding: t; -*-
 ;;
-;;; Copyright (C) 2021 Kyle W T Sherman
+;;; Copyright (C) 2022 Kyle W T Sherman
 ;;
 ;; Author: Kyle W T Sherman <kylewsherman@gmail.com>
 ;; URL: https://github.com/nullman/emacs-org-visibility
 ;; Created: 2021-07-17
-;; Version: 1.0
+;; Version: 1.1
 ;; Keywords: outlines convenience
 ;; Package-Requires: ((emacs "27.1"))
 ;;
@@ -76,7 +76,7 @@
 ;; Put `org-visibility.el' where you keep your elisp files and add something
 ;; like the following to your .emacs file:
 ;;
-;;   ;; optionally change the location of the state file (not recommended)
+;;   ;; optionally change the location of the state file
 ;;   ;;(setq org-visibility-state-file `,(expand-file-name "/some/path/.org-visibility"))
 ;;
 ;;   ;; list of directories and files to persist and restore visibility state of
@@ -88,28 +88,28 @@
 ;;   ;; list of directories and files to not persist and restore visibility state of
 ;;   ;;(setq org-visibility-exclude-paths `(,(file-truename "~/org/old")))
 ;;
-;;   ;; optional maximum number of files to keep track of
+;;   ;; optionally set maximum number of files to keep track of
 ;;   ;; oldest files will be removed from the sate file first
 ;;   ;;(setq org-visibility-maximum-tracked-files 100)
 ;;
-;;   ;; optional maximum number of days (since saved) to keep track of
+;;   ;; optionally set maximum number of days (since saved) to keep track of
 ;;   ;; files older than this number of days will be removed from the state file
 ;;   ;;(setq org-visibility-maximum-tracked-days 180)
 ;;
 ;;   (require 'org-visibility)
 ;;
-;;   ;; enable all hooks (recommended)
-;;   (org-visibility-enable-hooks)
+;;   ;; enable org-visibility-mode when org-mode is enabled
+;;   (add-hook 'org-mode-hook #'org-visibility-mode)
 ;;
 ;;   ;; optionally set a keybinding to force save
-;;   (bind-keys :map org-mode-map
+;;   (bind-keys :map org-visibility-mode-map
 ;;                   ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
 ;;                   ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
 ;;
 ;; Or, if using `use-package', add something like this instead:
 ;;
 ;;   (use-package org-visibility
-;;     :bind (:map org-mode-map
+;;     :bind (:map org-visibility-mode-map
 ;;                 ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
 ;;                 ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
 ;;     :custom
@@ -120,25 +120,28 @@
 ;;     ;;(org-visibility-include-regexps '("\\.org\\'"))
 ;;     ;; list of directories and files to not persist and restore visibility state of
 ;;     ;;(org-visibility-exclude-paths `(,(file-truename "~/org/old")))
-;;     ;; optional maximum number of files to keep track of
+;;     ;; optionally set maximum number of files to keep track of
 ;;     ;; oldest files will be removed from the sate file first
 ;;     ;;(org-visibility-maximum-tracked-files 100)
-;;     ;; optional maximum number of days (since saved) to keep track of
+;;     ;; optionally set maximum number of days (since saved) to keep track of
 ;;     ;; files older than this number of days will be removed from the state file
 ;;     ;;(org-visibility-maximum-tracked-days 180)
 ;;     :config
-;;     ;; enable all hooks (recommended)
-;;     (org-visibility-enable-hooks))
+;;     ;; enable org-visibility-mode when org-mode is enabled
+;;     (add-hook 'org-mode-hook #'org-visibility-mode))
 ;;
 ;; Usage:
 ;;
-;; As long as `org-visibility-enable-hooks' has been called, visibility state
-;; is automatically persisted on file save or kill, and restored when loaded.
-;; No user intervention is needed.  The user can, however, call
+;; As long as `org-visibility-mode' is enabled, visibility state is
+;; automatically persisted on file save or kill, and restored when loaded.  No
+;; user intervention is needed.  The user can, however, call
 ;; `org-visibility-force-save' to save the current visibility state of a
 ;; buffer before a file save or kill would automatically trigger it next.
 ;;
 ;; Interactive commands:
+;;
+;; The `org-visibility-mode' function toggles the minor mode on and off.  For
+;; normal use, turn it on when `org-mode' is enabled.
 ;;
 ;; The `org-visibility-save' function saves the current buffer's file
 ;; visibility state if it has been modified or had an `org-cycle' change, and
@@ -159,13 +162,6 @@
 ;;
 ;; The `org-visibility-clean' function removes all missing or untracked files
 ;; from `org-visibility-state-file'.
-;;
-;; The `org-visibility-enable-hooks' function enables all `org-visibility'
-;; hooks so that it works automatically.
-;;
-;; The `org-visibility-disable-hooks' function disables all `org-visibility'
-;; hooks so that it is effectively turned off unless functions are manually
-;; called.
 
 ;;; Code:
 
@@ -456,7 +452,7 @@ or matches a regular expression listed in
                      (read (buffer-substring-no-properties (point-min) (point-max))))))))
         (with-temp-file org-visibility-state-file
           (insert (format "%S\n" data)))
-        (message (format "Removed visibility state of %s" file-name))))))
+        (message "Removed visibility state of %s" file-name)))))
 
 ;;;###autoload
 (defun org-visibility-clean ()
@@ -530,10 +526,8 @@ Unless STATE is 'INVALID-STATE."
   (when (not (eq state 'INVALID-STATE))
     (org-visibility-dirty)))
 
-;;;###autoload
 (defun org-visibility-enable-hooks ()
   "Helper function to enable all `org-visibility' hooks."
-  (interactive)
   (add-hook 'after-save-hook #'org-visibility-save-noerror :append)
   (add-hook 'kill-buffer-hook #'org-visibility-save-noerror :append)
   (add-hook 'kill-emacs-hook #'org-visibility-save-all-buffers :append)
@@ -541,16 +535,33 @@ Unless STATE is 'INVALID-STATE."
   (add-hook 'first-change-hook #'org-visibility-dirty :append)
   (add-hook 'org-cycle-hook #'org-visibility-dirty-org-cycle :append))
 
-;;;###autoload
 (defun org-visibility-disable-hooks ()
   "Helper function to disable all `org-visibility' hooks."
-  (interactive)
   (remove-hook 'after-save-hook #'org-visibility-save-noerror)
   (remove-hook 'kill-buffer-hook #'org-visibility-save-noerror)
   (remove-hook 'kill-emacs-hook #'org-visibility-save-all-buffers)
   (remove-hook 'find-file-hook #'org-visibility-load)
   (remove-hook 'first-change-hook #'org-visibility-dirty)
   (remove-hook 'org-cycle-hook #'org-visibility-dirty-org-cycle))
+
+;;;###autoload
+(define-minor-mode org-visibility-mode
+  "Minor mode for toggling `org-visibility' hooks on and off.
+
+This minor mode will persist (save and load) the state of the
+visible sections of `org-mode' files.  The state is saved when
+the file is saved or killed, and restored when the file is
+loaded.
+
+\\{org-visibility-mode-map}"
+  :lighter " vis"
+  :keymap (make-sparse-keymap)
+  ;; toggle hooks on and off
+  (if org-visibility-mode
+      (progn
+        (org-visibility-enable-hooks)
+        (org-visibility-load))
+    (org-visibility-disable-hooks)))
 
 (provide 'org-visibility)
 
