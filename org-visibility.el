@@ -66,6 +66,7 @@
 ;;   `org-visibility-force-save'       - Save even if buffer has not been modified
 ;;   `org-visibility-save-all-buffers' - Save all buffers that qualify
 ;;   `org-visibility-load'             - Load a file and restore its visibility state
+;;   `org-visibility-remove'           - Remove current buffer from `org-visibility-state-file'
 ;;   `org-visibility-clean'            - Cleanup `org-visibility-state-file'
 ;;   `org-visibility-enable-hooks'     - Enable all hooks
 ;;   `org-visibility-disable-hooks'    - Disable all hooks
@@ -102,13 +103,15 @@
 ;;
 ;;   ;; optionally set a keybinding to force save
 ;;   (bind-keys :map org-mode-map
-;;                   ("C-x C-v" . org-visibility-force-save)) ; defaults to `find-alternative-file'
+;;                   ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
+;;                   ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
 ;;
 ;; Or, if using `use-package', add something like this instead:
 ;;
 ;;   (use-package org-visibility
 ;;     :bind (:map org-mode-map
-;;                 ("C-x C-v" . org-visibility-force-save)) ; defaults to `find-alternative-file'
+;;                 ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
+;;                 ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
 ;;     :custom
 ;;     ;; list of directories and files to persist and restore visibility state of
 ;;     (org-visibility-include-paths `(,(file-truename "~/.emacs.d/init-emacs.org")
@@ -150,6 +153,9 @@
 ;;
 ;; The `org-visibility-load' function loads a file and restores its visibility
 ;; state if it matches the above Qualification Rules.
+;;
+;; The `org-visibility-remove' function removes a given file (or the current
+;; buffer's file) from `org-visibility-state-file'.
 ;;
 ;; The `org-visibility-clean' function removes all missing or untracked files
 ;; from `org-visibility-state-file'.
@@ -436,21 +442,36 @@ or matches a regular expression listed in
       (t t))))
 
 ;;;###autoload
+(defun org-visibility-remove (&optional file-name)
+  "Remove visibility state of FILE-NAME or `current-buffer'."
+  (interactive)
+  (let ((file-name (or file-name (buffer-file-name (current-buffer)))))
+    (when file-name
+      (let ((data
+             (cl-remove-if
+              (lambda (x) (string-equal (car x) file-name))
+              (and (file-exists-p org-visibility-state-file)
+                   (with-temp-buffer
+                     (insert-file-contents org-visibility-state-file)
+                     (read (buffer-substring-no-properties (point-min) (point-max))))))))
+        (with-temp-file org-visibility-state-file
+          (insert (format "%S\n" data)))
+        (message (format "Removed visibility state of %s" file-name))))))
+
+;;;###autoload
 (defun org-visibility-clean ()
   "Remove any missing files from `org-visibility-state-file'."
   (interactive)
-  (let ((data (and (file-exists-p org-visibility-state-file)
-                   (ignore-errors
-                     (with-temp-buffer
-                       (insert-file-contents org-visibility-state-file)
-                       (read (buffer-substring-no-properties (point-min) (point-max))))))))
-    (setq data (cl-remove-if-not
-                (lambda (x)
-                  (let ((file-name (car x)))
-                    (and (file-exists-p file-name)
-                         (org-visibility-check-file-include-exclude-paths-and-regexps file-name))))
-                data))
-
+  (let ((data
+         (cl-remove-if-not
+          (lambda (x)
+            (let ((file-name (car x)))
+              (and (file-exists-p file-name)
+                   (org-visibility-check-file-include-exclude-paths-and-regexps file-name))))
+          (and (file-exists-p org-visibility-state-file)
+               (with-temp-buffer
+                 (insert-file-contents org-visibility-state-file)
+                 (read (buffer-substring-no-properties (point-min) (point-max))))))))
     (with-temp-file org-visibility-state-file
       (insert (format "%S\n" data)))
     (message "Visibility state file has been cleaned")))

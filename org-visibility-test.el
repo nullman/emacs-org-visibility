@@ -533,6 +533,29 @@ include regular expressions."
        errors)
      (list file1 file2 file3))))
 
+(ert-deftest org-visibility-test-test-remove ()
+  "Test `org-visibility-remove'."
+  (let ((file1 (org-visibility-test-create-org-file))
+        (file2 (org-visibility-test-create-org-file))
+        errors)
+    (org-visibility-test-run-test
+     (lambda ()
+       (let ((org-visibility-include-paths (list file1 file2)))
+         (find-file file1)
+         (org-visibility-test-cycle-outline)
+         (kill-buffer (current-buffer))
+         (find-file file2)
+         (org-visibility-test-cycle-outline)
+         (kill-buffer (current-buffer))
+         (push (org-visibility-test-check-state-file-entries 2) errors)
+         (org-visibility-remove file1)
+         (push (org-visibility-test-check-state-file-entries 1) errors)
+         (find-file file2)
+         (org-visibility-remove)
+         (push (org-visibility-test-check-state-file-entries 0) errors))
+       errors)
+     (list file1 file2))))
+
 (ert-deftest org-visibility-test-test-clean-remove-file ()
   "Test `org-visibility-clean'."
   (let ((file1 (org-visibility-test-create-org-file))
