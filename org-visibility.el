@@ -346,10 +346,10 @@ If FORCE is non-nil, save even if file is not marked as dirty."
     (with-current-buffer buffer
       (if (not (eq major-mode 'org-mode))
           (unless noerror
-            (error "This function only works with `org-mode' files"))
+            (user-error "This function only works with `org-mode' files"))
         (if (not file-name)
             (unless noerror
-              (error "There is no file associated with this buffer: %S" buffer))
+              (user-error "There is no file associated with this buffer: %S" buffer))
           (when (or force org-visibility-dirty)
             (save-mark-and-excursion
               (goto-char (point-min))
@@ -368,10 +368,10 @@ If NOERROR is non-nil, do not throw errors."
     (with-current-buffer buffer
       (if (not (eq major-mode 'org-mode))
           (unless noerror
-            (error "This function only works with `org-mode' files"))
+            (user-error "This function only works with `org-mode' files"))
         (if (not (buffer-file-name buffer))
             (unless noerror
-              (error "There is no file associated with this buffer: %S" buffer))
+              (user-error "There is no file associated with this buffer: %S" buffer))
           (let ((visible (org-visibility-get buffer)))
             (save-mark-and-excursion
               (outline-hide-sublevels 1)
