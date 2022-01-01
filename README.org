@@ -20,6 +20,9 @@
 
   Run tests with =make test=.
 
+  All files are generated from [[file:org-visibility.org][org-visibility.org]] using Emacs' org-mode literate
+  programming system to "tangle" them.
+
   Copyright (C) 2022 Kyle W T Sherman
 
   License:  [[file:LICENSE][GNU General Public License 2]]
