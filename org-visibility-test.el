@@ -34,7 +34,7 @@
 
 (defun org-visibility-test-run-test (test files)
   "Setup test environment, run TEST using FILES, then restore environment."
-  (org-visibility-enable-hooks)
+  (org-visibility-mode 1)
   (let ((org-startup-folded 'showeverything)
         (org-odd-levels-only t)
         (enable-local-variables :all)
@@ -124,6 +124,15 @@ Return list of errors, or nil, if none."
             (push (format "Line visible: %s" line) errors)))
         (forward-line 1)))
     (nreverse errors)))
+
+(defun org-visibility-test-check-mode (enabled)
+  "Test that `org-visibility-mode' is ENABLED.
+
+Return error, if not ENABLED, otherwise nil."
+  (if (or (and org-visibility-mode enabled)
+          (and (not org-visibility-mode) (not enabled)))
+      nil
+    (list (format "Mode not: %s" enabled))))
 
 (defun org-visibility-test-check-state-file-entries (count)
   "Test that `org-visibility-state-file' has COUNT entries.
@@ -356,6 +365,54 @@ include regular expressions."
          (fundamental-mode)
          (kill-buffer (current-buffer))
          (find-file file)
+         (push (org-visibility-test-check-visible-lines '(1 5 11)) errors)
+         (kill-buffer (current-buffer)))
+       errors)
+     (list file))))
+
+(ert-deftest org-visibility-test-test-no-persistence-with-mode-disabled ()
+  "Test no visibility persistence with mode disabled."
+  (let ((file (org-visibility-test-create-org-file))
+        errors)
+    (org-visibility-test-run-test
+     (lambda ()
+       (let ((org-visibility-include-paths (list file)))
+         (org-visibility-mode -1)
+         (find-file file)
+         (org-visibility-test-check-mode nil)
+         (org-visibility-test-cycle-outline)
+         (push (org-visibility-test-check-visible-lines '(1 5 6 9 11)) errors)
+         (kill-buffer (current-buffer))
+         (find-file file)
+         (org-visibility-test-check-mode nil)
+         (push (org-visibility-test-check-visible-lines '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18)) errors)
+         (kill-buffer (current-buffer)))
+       errors)
+     (list file))))
+
+(ert-deftest org-visibility-test-test-persistence-with-mode-enabled ()
+  "Test visibility persistence with mode enabled."
+  (let ((file (org-visibility-test-create-org-file))
+        errors)
+    (org-visibility-test-run-test
+     (lambda ()
+       (let ((org-visibility-include-paths (list file)))
+         (org-visibility-mode -1)
+         (find-file file)
+         (org-visibility-test-check-mode nil)
+         (org-visibility-test-cycle-outline)
+         (push (org-visibility-test-check-visible-lines '(1 5 6 9 11)) errors)
+         (kill-buffer (current-buffer))
+         (find-file file)
+         (org-visibility-test-check-mode nil)
+         (push (org-visibility-test-check-visible-lines '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18)) errors)
+         (org-visibility-test-cycle-outline)
+         (push (org-visibility-test-check-visible-lines '(1 5 6 9 11)) errors)
+         (org-visibility-mode 1)
+         (org-visibility-test-check-mode t)
+         (kill-buffer (current-buffer))
+         (find-file file)
+         (org-visibility-test-check-mode t)
          (push (org-visibility-test-check-visible-lines '(1 5 11)) errors)
          (kill-buffer (current-buffer)))
        errors)

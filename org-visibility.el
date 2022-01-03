@@ -98,8 +98,8 @@
 ;;
 ;;   (require 'org-visibility)
 ;;
-;;   ;; enable org-visibility-mode when org-mode is enabled
-;;   (add-hook 'org-mode-hook #'org-visibility-mode)
+;;   ;; enable org-visibility-mode
+;;   (org-visibility-mode 1)
 ;;
 ;;   ;; optionally set a keybinding to force save
 ;;   (bind-keys :map org-visibility-mode-map
@@ -109,6 +109,7 @@
 ;; Or, if using `use-package', add something like this instead:
 ;;
 ;;   (use-package org-visibility
+;;     :demand t
 ;;     :bind (:map org-visibility-mode-map
 ;;                 ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
 ;;                 ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
@@ -127,8 +128,8 @@
 ;;     ;; files older than this number of days will be removed from the state file
 ;;     ;;(org-visibility-maximum-tracked-days 180)
 ;;     :config
-;;     ;; enable org-visibility-mode when org-mode is enabled
-;;     (add-hook 'org-mode-hook #'org-visibility-mode))
+;;     ;; enable org-visibility-mode
+;;     (org-visibility-mode 1))
 ;;
 ;; Usage:
 ;;
@@ -558,9 +559,7 @@ loaded.
   :keymap (make-sparse-keymap)
   ;; toggle hooks on and off
   (if org-visibility-mode
-      (progn
         (org-visibility-enable-hooks)
-        (org-visibility-load))
     (org-visibility-disable-hooks)))
 
 (provide 'org-visibility)
