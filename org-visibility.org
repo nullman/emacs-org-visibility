@@ -8,7 +8,7 @@
   #+LANGUAGE: en
   #+PROPERTY: header-args :tangle no :noweb yes :results silent :mkdir yes
   #+OPTIONS: num:nil toc:nil d:(HIDE) tags:not-in-toc html-preamble:nil html-postamble:nil
-  #+TIMESTAMP: <2022-01-03 00:15 (kyle)>
+  #+TIMESTAMP: <2022-01-04 14:16 (kyle)>
 
 * Table of Contents
   :PROPERTIES:
@@ -217,6 +217,9 @@
     ;;   ;; files older than this number of days will be removed from the state file
     ;;   ;;(setq org-visibility-maximum-tracked-days 180)
     ;;
+    ;;   ;; optionally turn off visibility state change messages
+    ;;   ;;(setq org-visibility-display-messages nil)
+    ;;
     ;;   (require 'org-visibility)
     ;;
     ;;   ;; enable org-visibility-mode
@@ -248,6 +251,8 @@
     ;;     ;; optionally set maximum number of days (since saved) to keep track of
     ;;     ;; files older than this number of days will be removed from the state file
     ;;     ;;(org-visibility-maximum-tracked-days 180)
+    ;;     ;; optionally turn off visibility state change messages
+    ;;     ;;(org-visibility-display-messages nil)
     ;;     :config
     ;;     ;; enable org-visibility-mode
     ;;     (org-visibility-mode 1))
@@ -295,6 +300,11 @@
       "Persistent org tree visibility."
       :group 'org
       :prefix "org-visibility-")
+
+    (defcustom org-visibility-display-messages t
+      "Whether or not to display messages when visibility states are changed."
+      :type 'boolean
+      :group 'org-visibility)
 
     (defcustom org-visibility-state-file
       `,(expand-file-name ".org-visibility" user-emacs-directory)
@@ -436,7 +446,8 @@
           (setq data (org-visibility-remove-over-maximum-tracked-days data)) ; remove old files over maximum days
           (with-temp-file org-visibility-state-file
             (insert (format "%S\n" data)))
-          (message "Set visibility state for %s" file-name))))
+          (when org-visibility-display-messages
+            (message "Set visibility state for %s" file-name)))))
 
     (defun org-visibility-get (buffer)
       "Get visibility state.
@@ -453,7 +464,8 @@
         (when file-name
           (let ((state (assoc file-name data)))
             (when (string= (caddr state) checksum)
-              (message "Restored visibility state for %s" file-name)
+              (when org-visibility-display-messages
+                (message "Restored visibility state for %s" file-name))
               (cadddr state))))))
 
     (defun org-visibility-save-internal (&optional buffer noerror force)
@@ -574,7 +586,8 @@
                          (read (buffer-substring-no-properties (point-min) (point-max))))))))
             (with-temp-file org-visibility-state-file
               (insert (format "%S\n" data)))
-            (message "Removed visibility state of %s" file-name)))))
+            (when org-visibility-display-messages
+              (message "Removed visibility state of %s" file-name))))))
 
     ;;;###autoload
     (defun org-visibility-clean ()
@@ -592,7 +605,8 @@
                      (read (buffer-substring-no-properties (point-min) (point-max))))))))
         (with-temp-file org-visibility-state-file
           (insert (format "%S\n" data)))
-        (message "Visibility state file has been cleaned")))
+        (when org-visibility-display-messages
+          (message "Visibility state file has been cleaned"))))
 
     ;;;###autoload
     (defun org-visibility-save (&optional noerror force)
@@ -680,7 +694,7 @@
       :keymap (make-sparse-keymap)
       ;; toggle hooks on and off
       (if org-visibility-mode
-            (org-visibility-enable-hooks)
+          (org-visibility-enable-hooks)
         (org-visibility-disable-hooks)))
 
     (provide 'org-visibility)

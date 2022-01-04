@@ -175,6 +175,11 @@
   :group 'org
   :prefix "org-visibility-")
 
+(defcustom org-visibility-display-messages t
+  "Whether or not to display messages when visibility states are changed."
+  :type 'boolean
+  :group 'org-visibility)
+
 (defcustom org-visibility-state-file
   `,(expand-file-name ".org-visibility" user-emacs-directory)
   "File used to store org visibility state."
@@ -315,7 +320,8 @@ Set visibility state record for BUFFER to VISIBLE and update
       (setq data (org-visibility-remove-over-maximum-tracked-days data)) ; remove old files over maximum days
       (with-temp-file org-visibility-state-file
         (insert (format "%S\n" data)))
-      (message "Set visibility state for %s" file-name))))
+      (when org-visibility-display-messages
+        (message "Set visibility state for %s" file-name)))))
 
 (defun org-visibility-get (buffer)
   "Get visibility state.
@@ -332,7 +338,8 @@ Return visibility state for BUFFER if found in
     (when file-name
       (let ((state (assoc file-name data)))
         (when (string= (caddr state) checksum)
-          (message "Restored visibility state for %s" file-name)
+          (when org-visibility-display-messages
+            (message "Restored visibility state for %s" file-name))
           (cadddr state))))))
 
 (defun org-visibility-save-internal (&optional buffer noerror force)
@@ -453,7 +460,8 @@ or matches a regular expression listed in
                      (read (buffer-substring-no-properties (point-min) (point-max))))))))
         (with-temp-file org-visibility-state-file
           (insert (format "%S\n" data)))
-        (message "Removed visibility state of %s" file-name)))))
+        (when org-visibility-display-messages
+          (message "Removed visibility state of %s" file-name))))))
 
 ;;;###autoload
 (defun org-visibility-clean ()
@@ -471,7 +479,8 @@ or matches a regular expression listed in
                  (read (buffer-substring-no-properties (point-min) (point-max))))))))
     (with-temp-file org-visibility-state-file
       (insert (format "%S\n" data)))
-    (message "Visibility state file has been cleaned")))
+    (when org-visibility-display-messages
+      (message "Visibility state file has been cleaned"))))
 
 ;;;###autoload
 (defun org-visibility-save (&optional noerror force)
@@ -559,7 +568,7 @@ loaded.
   :keymap (make-sparse-keymap)
   ;; toggle hooks on and off
   (if org-visibility-mode
-        (org-visibility-enable-hooks)
+      (org-visibility-enable-hooks)
     (org-visibility-disable-hooks)))
 
 (provide 'org-visibility)
