@@ -1,11 +1,11 @@
 ;;; org-visibility.el --- Persistent org tree visibility -*- lexical-binding: t; -*-
 ;;
-;;; Copyright (C) 2021 Kyle W T Sherman
+;;; Copyright (C) 2022 Kyle W T Sherman
 ;;
 ;; Author: Kyle W T Sherman <kylewsherman@gmail.com>
 ;; URL: https://github.com/nullman/emacs-org-visibility
 ;; Created: 2021-07-17
-;; Version: 1.0
+;; Version: 1.1
 ;; Keywords: outlines convenience
 ;; Package-Requires: ((emacs "27.1"))
 ;;
@@ -66,6 +66,7 @@
 ;;   `org-visibility-force-save'       - Save even if buffer has not been modified
 ;;   `org-visibility-save-all-buffers' - Save all buffers that qualify
 ;;   `org-visibility-load'             - Load a file and restore its visibility state
+;;   `org-visibility-remove'           - Remove current buffer from `org-visibility-state-file'
 ;;   `org-visibility-clean'            - Cleanup `org-visibility-state-file'
 ;;   `org-visibility-enable-hooks'     - Enable all hooks
 ;;   `org-visibility-disable-hooks'    - Disable all hooks
@@ -75,7 +76,7 @@
 ;; Put `org-visibility.el' where you keep your elisp files and add something
 ;; like the following to your .emacs file:
 ;;
-;;   ;; optionally change the location of the state file (not recommended)
+;;   ;; optionally change the location of the state file
 ;;   ;;(setq org-visibility-state-file `,(expand-file-name "/some/path/.org-visibility"))
 ;;
 ;;   ;; list of directories and files to persist and restore visibility state of
@@ -87,28 +88,34 @@
 ;;   ;; list of directories and files to not persist and restore visibility state of
 ;;   ;;(setq org-visibility-exclude-paths `(,(file-truename "~/org/old")))
 ;;
-;;   ;; optional maximum number of files to keep track of
+;;   ;; optionally set maximum number of files to keep track of
 ;;   ;; oldest files will be removed from the sate file first
 ;;   ;;(setq org-visibility-maximum-tracked-files 100)
 ;;
-;;   ;; optional maximum number of days (since saved) to keep track of
+;;   ;; optionally set maximum number of days (since saved) to keep track of
 ;;   ;; files older than this number of days will be removed from the state file
 ;;   ;;(setq org-visibility-maximum-tracked-days 180)
 ;;
+;;   ;; optionally turn off visibility state change messages
+;;   ;;(setq org-visibility-display-messages nil)
+;;
 ;;   (require 'org-visibility)
 ;;
-;;   ;; enable all hooks (recommended)
-;;   (org-visibility-enable-hooks)
+;;   ;; enable org-visibility-mode
+;;   (org-visibility-mode 1)
 ;;
 ;;   ;; optionally set a keybinding to force save
-;;   (bind-keys :map org-mode-map
-;;                   ("C-x C-v" . org-visibility-force-save)) ; defaults to `find-alternative-file'
+;;   (bind-keys :map org-visibility-mode-map
+;;                   ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
+;;                   ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
 ;;
 ;; Or, if using `use-package', add something like this instead:
 ;;
 ;;   (use-package org-visibility
-;;     :bind (:map org-mode-map
-;;                 ("C-x C-v" . org-visibility-force-save)) ; defaults to `find-alternative-file'
+;;     :demand t
+;;     :bind (:map org-visibility-mode-map
+;;                 ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
+;;                 ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
 ;;     :custom
 ;;     ;; list of directories and files to persist and restore visibility state of
 ;;     (org-visibility-include-paths `(,(file-truename "~/.emacs.d/init-emacs.org")
@@ -117,25 +124,30 @@
 ;;     ;;(org-visibility-include-regexps '("\\.org\\'"))
 ;;     ;; list of directories and files to not persist and restore visibility state of
 ;;     ;;(org-visibility-exclude-paths `(,(file-truename "~/org/old")))
-;;     ;; optional maximum number of files to keep track of
+;;     ;; optionally set maximum number of files to keep track of
 ;;     ;; oldest files will be removed from the sate file first
 ;;     ;;(org-visibility-maximum-tracked-files 100)
-;;     ;; optional maximum number of days (since saved) to keep track of
+;;     ;; optionally set maximum number of days (since saved) to keep track of
 ;;     ;; files older than this number of days will be removed from the state file
 ;;     ;;(org-visibility-maximum-tracked-days 180)
+;;     ;; optionally turn off visibility state change messages
+;;     ;;(org-visibility-display-messages nil)
 ;;     :config
-;;     ;; enable all hooks (recommended)
-;;     (org-visibility-enable-hooks))
+;;     ;; enable org-visibility-mode
+;;     (org-visibility-mode 1))
 ;;
 ;; Usage:
 ;;
-;; As long as `org-visibility-enable-hooks' has been called, visibility state
-;; is automatically persisted on file save or kill, and restored when loaded.
-;; No user intervention is needed.  The user can, however, call
+;; As long as `org-visibility-mode' is enabled, visibility state is
+;; automatically persisted on file save or kill, and restored when loaded.  No
+;; user intervention is needed.  The user can, however, call
 ;; `org-visibility-force-save' to save the current visibility state of a
 ;; buffer before a file save or kill would automatically trigger it next.
 ;;
 ;; Interactive commands:
+;;
+;; The `org-visibility-mode' function toggles the minor mode on and off.  For
+;; normal use, turn it on when `org-mode' is enabled.
 ;;
 ;; The `org-visibility-save' function saves the current buffer's file
 ;; visibility state if it has been modified or had an `org-cycle' change, and
@@ -151,15 +163,11 @@
 ;; The `org-visibility-load' function loads a file and restores its visibility
 ;; state if it matches the above Qualification Rules.
 ;;
+;; The `org-visibility-remove' function removes a given file (or the current
+;; buffer's file) from `org-visibility-state-file'.
+;;
 ;; The `org-visibility-clean' function removes all missing or untracked files
 ;; from `org-visibility-state-file'.
-;;
-;; The `org-visibility-enable-hooks' function enables all `org-visibility'
-;; hooks so that it works automatically.
-;;
-;; The `org-visibility-disable-hooks' function disables all `org-visibility'
-;; hooks so that it is effectively turned off unless functions are manually
-;; called.
 
 ;;; Code:
 
@@ -171,6 +179,11 @@
   "Persistent org tree visibility."
   :group 'org
   :prefix "org-visibility-")
+
+(defcustom org-visibility-display-messages t
+  "Whether or not to display messages when visibility states are changed."
+  :type 'boolean
+  :group 'org-visibility)
 
 (defcustom org-visibility-state-file
   `,(expand-file-name ".org-visibility" user-emacs-directory)
@@ -263,15 +276,9 @@ and `org-visibility-exclude-regexps'.)")
   "Return epoch (seconds since 1970-01-01) from TIMESTAMP."
   (truncate (float-time (date-to-time timestamp))))
 
-(defun org-visibility-buffer-file-checksum (&optional buffer)
-  "Return checksum for BUFFER file or nil if file does not exist."
-  (let* ((buffer (or buffer (current-buffer)))
-         (file-name (buffer-file-name buffer)))
-    (ignore-errors
-      (car (split-string
-            (if (string= window-system "ns")
-                (shell-command-to-string (concat "md5 -r " file-name))
-              (shell-command-to-string (concat "md5sum " file-name))))))))
+(defun org-visibility-buffer-checksum (&optional buffer)
+  "Return checksum for BUFFER."
+  (secure-hash 'md5 (or buffer (current-buffer))))
 
 (defun org-visibility-remove-over-maximum-tracked-files (data)
   "Remove oldest files over maximum file count from DATA.
@@ -310,7 +317,7 @@ Set visibility state record for BUFFER to VISIBLE and update
                        (read (buffer-substring-no-properties (point-min) (point-max)))))))
         (file-name (buffer-file-name buffer))
         (date (org-visibility-timestamp))
-        (checksum (org-visibility-buffer-file-checksum buffer)))
+        (checksum (org-visibility-buffer-checksum buffer)))
     (when file-name
       (setq data (delq (assoc file-name data) data)) ; remove previous value
       (setq data (append (list (list file-name date checksum visible)) data)) ; add new value
@@ -318,7 +325,8 @@ Set visibility state record for BUFFER to VISIBLE and update
       (setq data (org-visibility-remove-over-maximum-tracked-days data)) ; remove old files over maximum days
       (with-temp-file org-visibility-state-file
         (insert (format "%S\n" data)))
-      (message "Set visibility state for %s" file-name))))
+      (when org-visibility-display-messages
+        (message "Set visibility state for %s" file-name)))))
 
 (defun org-visibility-get (buffer)
   "Get visibility state.
@@ -331,11 +339,12 @@ Return visibility state for BUFFER if found in
                        (insert-file-contents org-visibility-state-file)
                        (read (buffer-substring-no-properties (point-min) (point-max)))))))
         (file-name (buffer-file-name buffer))
-        (checksum (org-visibility-buffer-file-checksum buffer)))
+        (checksum (org-visibility-buffer-checksum buffer)))
     (when file-name
       (let ((state (assoc file-name data)))
         (when (string= (caddr state) checksum)
-          (message "Restored visibility state for %s" file-name)
+          (when org-visibility-display-messages
+            (message "Restored visibility state for %s" file-name))
           (cadddr state))))))
 
 (defun org-visibility-save-internal (&optional buffer noerror force)
@@ -350,10 +359,10 @@ If FORCE is non-nil, save even if file is not marked as dirty."
     (with-current-buffer buffer
       (if (not (eq major-mode 'org-mode))
           (unless noerror
-            (error "This function only works with `org-mode' files"))
+            (user-error "This function only works with `org-mode' files"))
         (if (not file-name)
             (unless noerror
-              (error "There is no file associated with this buffer: %S" buffer))
+              (user-error "There is no file associated with this buffer: %S" buffer))
           (when (or force org-visibility-dirty)
             (save-mark-and-excursion
               (goto-char (point-min))
@@ -372,10 +381,10 @@ If NOERROR is non-nil, do not throw errors."
     (with-current-buffer buffer
       (if (not (eq major-mode 'org-mode))
           (unless noerror
-            (error "This function only works with `org-mode' files"))
+            (user-error "This function only works with `org-mode' files"))
         (if (not (buffer-file-name buffer))
             (unless noerror
-              (error "There is no file associated with this buffer: %S" buffer))
+              (user-error "There is no file associated with this buffer: %S" buffer))
           (let ((visible (org-visibility-get buffer)))
             (save-mark-and-excursion
               (outline-hide-sublevels 1)
@@ -442,24 +451,41 @@ or matches a regular expression listed in
       (t t))))
 
 ;;;###autoload
+(defun org-visibility-remove (&optional file-name)
+  "Remove visibility state of FILE-NAME or `current-buffer'."
+  (interactive)
+  (let ((file-name (or file-name (buffer-file-name (current-buffer)))))
+    (when file-name
+      (let ((data
+             (cl-remove-if
+              (lambda (x) (string-equal (car x) file-name))
+              (and (file-exists-p org-visibility-state-file)
+                   (with-temp-buffer
+                     (insert-file-contents org-visibility-state-file)
+                     (read (buffer-substring-no-properties (point-min) (point-max))))))))
+        (with-temp-file org-visibility-state-file
+          (insert (format "%S\n" data)))
+        (when org-visibility-display-messages
+          (message "Removed visibility state of %s" file-name))))))
+
+;;;###autoload
 (defun org-visibility-clean ()
   "Remove any missing files from `org-visibility-state-file'."
   (interactive)
-  (let ((data (and (file-exists-p org-visibility-state-file)
-                   (ignore-errors
-                     (with-temp-buffer
-                       (insert-file-contents org-visibility-state-file)
-                       (read (buffer-substring-no-properties (point-min) (point-max))))))))
-    (setq data (cl-remove-if-not
-                (lambda (x)
-                  (let ((file-name (car x)))
-                    (and (file-exists-p file-name)
-                         (org-visibility-check-file-include-exclude-paths-and-regexps file-name))))
-                data))
-
+  (let ((data
+         (cl-remove-if-not
+          (lambda (x)
+            (let ((file-name (car x)))
+              (and (file-exists-p file-name)
+                   (org-visibility-check-file-include-exclude-paths-and-regexps file-name))))
+          (and (file-exists-p org-visibility-state-file)
+               (with-temp-buffer
+                 (insert-file-contents org-visibility-state-file)
+                 (read (buffer-substring-no-properties (point-min) (point-max))))))))
     (with-temp-file org-visibility-state-file
       (insert (format "%S\n" data)))
-    (message "Visibility state file has been cleaned")))
+    (when org-visibility-display-messages
+      (message "Visibility state file has been cleaned"))))
 
 ;;;###autoload
 (defun org-visibility-save (&optional noerror force)
@@ -515,10 +541,8 @@ Unless STATE is 'INVALID-STATE."
   (when (not (eq state 'INVALID-STATE))
     (org-visibility-dirty)))
 
-;;;###autoload
 (defun org-visibility-enable-hooks ()
   "Helper function to enable all `org-visibility' hooks."
-  (interactive)
   (add-hook 'after-save-hook #'org-visibility-save-noerror :append)
   (add-hook 'kill-buffer-hook #'org-visibility-save-noerror :append)
   (add-hook 'kill-emacs-hook #'org-visibility-save-all-buffers :append)
@@ -526,16 +550,31 @@ Unless STATE is 'INVALID-STATE."
   (add-hook 'first-change-hook #'org-visibility-dirty :append)
   (add-hook 'org-cycle-hook #'org-visibility-dirty-org-cycle :append))
 
-;;;###autoload
 (defun org-visibility-disable-hooks ()
   "Helper function to disable all `org-visibility' hooks."
-  (interactive)
   (remove-hook 'after-save-hook #'org-visibility-save-noerror)
   (remove-hook 'kill-buffer-hook #'org-visibility-save-noerror)
   (remove-hook 'kill-emacs-hook #'org-visibility-save-all-buffers)
   (remove-hook 'find-file-hook #'org-visibility-load)
   (remove-hook 'first-change-hook #'org-visibility-dirty)
   (remove-hook 'org-cycle-hook #'org-visibility-dirty-org-cycle))
+
+;;;###autoload
+(define-minor-mode org-visibility-mode
+  "Minor mode for toggling `org-visibility' hooks on and off.
+
+This minor mode will persist (save and load) the state of the
+visible sections of `org-mode' files.  The state is saved when
+the file is saved or killed, and restored when the file is
+loaded.
+
+\\{org-visibility-mode-map}"
+  :lighter " vis"
+  :keymap (make-sparse-keymap)
+  ;; toggle hooks on and off
+  (if org-visibility-mode
+      (org-visibility-enable-hooks)
+    (org-visibility-disable-hooks)))
 
 (provide 'org-visibility)
 

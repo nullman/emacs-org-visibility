@@ -1,6 +1,6 @@
 ;;; org-visibility-test.el --- Test org-visibility.el -*- lexical-binding: t; no-byte-compile: t; -*-
 ;;
-;;; Copyright (C) 2021 Kyle W T Sherman
+;;; Copyright (C) 2022 Kyle W T Sherman
 ;;
 ;; Author: Kyle W T Sherman <kylewsherman@gmail.com>
 ;; Created: 2021-07-17
@@ -34,7 +34,7 @@
 
 (defun org-visibility-test-run-test (test files)
   "Setup test environment, run TEST using FILES, then restore environment."
-  (org-visibility-enable-hooks)
+  (org-visibility-mode 1)
   (let ((org-startup-folded 'showeverything)
         (org-odd-levels-only t)
         (enable-local-variables :all)
@@ -124,6 +124,15 @@ Return list of errors, or nil, if none."
             (push (format "Line visible: %s" line) errors)))
         (forward-line 1)))
     (nreverse errors)))
+
+(defun org-visibility-test-check-mode (enabled)
+  "Test that `org-visibility-mode' is ENABLED.
+
+Return error, if not ENABLED, otherwise nil."
+  (if (or (and org-visibility-mode enabled)
+          (and (not org-visibility-mode) (not enabled)))
+      nil
+    (list (format "Mode not: %s" enabled))))
 
 (defun org-visibility-test-check-state-file-entries (count)
   "Test that `org-visibility-state-file' has COUNT entries.
@@ -361,6 +370,54 @@ include regular expressions."
        errors)
      (list file))))
 
+(ert-deftest org-visibility-test-test-no-persistence-with-mode-disabled ()
+  "Test no visibility persistence with mode disabled."
+  (let ((file (org-visibility-test-create-org-file))
+        errors)
+    (org-visibility-test-run-test
+     (lambda ()
+       (let ((org-visibility-include-paths (list file)))
+         (org-visibility-mode -1)
+         (find-file file)
+         (org-visibility-test-check-mode nil)
+         (org-visibility-test-cycle-outline)
+         (push (org-visibility-test-check-visible-lines '(1 5 6 9 11)) errors)
+         (kill-buffer (current-buffer))
+         (find-file file)
+         (org-visibility-test-check-mode nil)
+         (push (org-visibility-test-check-visible-lines '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18)) errors)
+         (kill-buffer (current-buffer)))
+       errors)
+     (list file))))
+
+(ert-deftest org-visibility-test-test-persistence-with-mode-enabled ()
+  "Test visibility persistence with mode enabled."
+  (let ((file (org-visibility-test-create-org-file))
+        errors)
+    (org-visibility-test-run-test
+     (lambda ()
+       (let ((org-visibility-include-paths (list file)))
+         (org-visibility-mode -1)
+         (find-file file)
+         (org-visibility-test-check-mode nil)
+         (org-visibility-test-cycle-outline)
+         (push (org-visibility-test-check-visible-lines '(1 5 6 9 11)) errors)
+         (kill-buffer (current-buffer))
+         (find-file file)
+         (org-visibility-test-check-mode nil)
+         (push (org-visibility-test-check-visible-lines '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18)) errors)
+         (org-visibility-test-cycle-outline)
+         (push (org-visibility-test-check-visible-lines '(1 5 6 9 11)) errors)
+         (org-visibility-mode 1)
+         (org-visibility-test-check-mode t)
+         (kill-buffer (current-buffer))
+         (find-file file)
+         (org-visibility-test-check-mode t)
+         (push (org-visibility-test-check-visible-lines '(1 5 11)) errors)
+         (kill-buffer (current-buffer)))
+       errors)
+     (list file))))
+
 (ert-deftest org-visibility-test-test-maximum-tracked-files ()
   "Test visibility persistence expires when
 `org-visibility-maximum-tracked-files' is exceeded."
@@ -532,6 +589,29 @@ include regular expressions."
          (kill-buffer (current-buffer)))
        errors)
      (list file1 file2 file3))))
+
+(ert-deftest org-visibility-test-test-remove ()
+  "Test `org-visibility-remove'."
+  (let ((file1 (org-visibility-test-create-org-file))
+        (file2 (org-visibility-test-create-org-file))
+        errors)
+    (org-visibility-test-run-test
+     (lambda ()
+       (let ((org-visibility-include-paths (list file1 file2)))
+         (find-file file1)
+         (org-visibility-test-cycle-outline)
+         (kill-buffer (current-buffer))
+         (find-file file2)
+         (org-visibility-test-cycle-outline)
+         (kill-buffer (current-buffer))
+         (push (org-visibility-test-check-state-file-entries 2) errors)
+         (org-visibility-remove file1)
+         (push (org-visibility-test-check-state-file-entries 1) errors)
+         (find-file file2)
+         (org-visibility-remove)
+         (push (org-visibility-test-check-state-file-entries 0) errors))
+       errors)
+     (list file1 file2))))
 
 (ert-deftest org-visibility-test-test-clean-remove-file ()
   "Test `org-visibility-clean'."

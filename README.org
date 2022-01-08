@@ -1,21 +1,28 @@
 * Org Visibility
 
-Org Visibility is an Emacs package that adds the ability to persist (save and
-load) the state of the visible sections of =org-mode= files.  The state is
-automatically saved when the file is saved or killed, and restored when the
-file is loaded.
+  :BADGE:
+  [[https://melpa.org/#/org-visibility][file:https://melpa.org/packages/org-visibility-badge.svg]]
+  :END:
 
-See the =Installation= and =Usage= parts of the =Commentary= section in
-[[file:org-visibility.el][org-visibility.el]] for more information.
+  Org Visibility is an Emacs package that adds the ability to persist (save and
+  load) the state of the visible sections of =org-mode= files.  The state is
+  automatically saved when the file is saved or killed, and restored when the
+  file is loaded.
 
-Emacs version 27.1 or later is required.
+  See the =Installation= and =Usage= parts of the =Commentary= section in
+  [[file:org-visibility.el][org-visibility.el]] for more information.
 
-Build with =make=.
+  Emacs version 27.1 or later is required.
 
-Clean with =make clean=.
+  Build with =make=.
 
-Run tests with =make test=.
+  Clean with =make clean=.
 
-Copyright (C) 2021 Kyle W T Sherman
+  Run tests with =make test=.
 
-License:  [[file:LICENSE][GNU General Public License 2]]
+  All files are generated from [[file:org-visibility.org][org-visibility.org]] using Emacs' org-mode literate
+  programming system to "tangle" them.
+
+  Copyright (C) 2022 Kyle W T Sherman
+
+  License:  [[file:LICENSE][GNU General Public License 2]]
