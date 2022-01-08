@@ -96,6 +96,9 @@
 ;;   ;; files older than this number of days will be removed from the state file
 ;;   ;;(setq org-visibility-maximum-tracked-days 180)
 ;;
+;;   ;; optionally turn off visibility state change messages
+;;   ;;(setq org-visibility-display-messages nil)
+;;
 ;;   (require 'org-visibility)
 ;;
 ;;   ;; enable org-visibility-mode
@@ -127,6 +130,8 @@
 ;;     ;; optionally set maximum number of days (since saved) to keep track of
 ;;     ;; files older than this number of days will be removed from the state file
 ;;     ;;(org-visibility-maximum-tracked-days 180)
+;;     ;; optionally turn off visibility state change messages
+;;     ;;(org-visibility-display-messages nil)
 ;;     :config
 ;;     ;; enable org-visibility-mode
 ;;     (org-visibility-mode 1))

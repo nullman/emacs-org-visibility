@@ -8,7 +8,7 @@
   #+LANGUAGE: en
   #+PROPERTY: header-args :tangle no :noweb yes :results silent :mkdir yes
   #+OPTIONS: num:nil toc:nil d:(HIDE) tags:not-in-toc html-preamble:nil html-postamble:nil
-  #+TIMESTAMP: <2022-01-04 14:16 (kyle)>
+  #+TIMESTAMP: <2022-01-08 09:27 (kyle)>
 
 * Table of Contents
   :PROPERTIES:
@@ -1488,6 +1488,15 @@
     test: all
     > @${EMACS} -batch -L . -l *-test.el -f ert-run-tests-batch-and-exit
   #+END_SRC
+
+  Run make clean, all, and tests.
+
+  #+BEGIN_SRC sh :results output replace
+    make clean all test 2>&1 | tail -n 2 | head -n 1
+  #+END_SRC
+
+  #+RESULTS:
+  : Ran 25 tests, 25 results as expected, 0 unexpected (2022-01-08 09:27:07-0600, 0.690964 sec)
 
 * .elpaignore
 
