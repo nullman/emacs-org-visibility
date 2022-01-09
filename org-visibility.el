@@ -102,7 +102,7 @@
 ;;   (require 'org-visibility)
 ;;
 ;;   ;; enable org-visibility-mode
-;;   (org-visibility-mode 1)
+;;   (add-hook 'org-mode-hook #'org-visibility-mode)
 ;;
 ;;   ;; optionally set a keybinding to force save
 ;;   (bind-keys :map org-visibility-mode-map
@@ -116,6 +116,7 @@
 ;;     :bind (:map org-visibility-mode-map
 ;;                 ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
 ;;                 ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
+;;     :hook (org-mode . org-visibility-mode)
 ;;     :custom
 ;;     ;; list of directories and files to persist and restore visibility state of
 ;;     (org-visibility-include-paths `(,(file-truename "~/.emacs.d/init-emacs.org")
@@ -132,9 +133,7 @@
 ;;     ;;(org-visibility-maximum-tracked-days 180)
 ;;     ;; optionally turn off visibility state change messages
 ;;     ;;(org-visibility-display-messages nil)
-;;     :config
-;;     ;; enable org-visibility-mode
-;;     (org-visibility-mode 1))
+;;     )
 ;;
 ;; Usage:
 ;;
