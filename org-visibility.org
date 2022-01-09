@@ -8,7 +8,7 @@
   #+LANGUAGE: en
   #+PROPERTY: header-args :tangle no :noweb yes :results silent :mkdir yes
   #+OPTIONS: num:nil toc:nil d:(HIDE) tags:not-in-toc html-preamble:nil html-postamble:nil
-  #+TIMESTAMP: <2022-01-08 09:27 (kyle)>
+  #+TIMESTAMP: <2022-01-09 13:56 (kyle)>
 
 * Table of Contents
   :PROPERTIES:
@@ -223,7 +223,7 @@
     ;;   (require 'org-visibility)
     ;;
     ;;   ;; enable org-visibility-mode
-    ;;   (org-visibility-mode 1)
+    ;;   (add-hook 'org-mode-hook #'org-visibility-mode)
     ;;
     ;;   ;; optionally set a keybinding to force save
     ;;   (bind-keys :map org-visibility-mode-map
@@ -237,6 +237,7 @@
     ;;     :bind (:map org-visibility-mode-map
     ;;                 ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
     ;;                 ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
+    ;;     :hook (org-mode . org-visibility-mode)
     ;;     :custom
     ;;     ;; list of directories and files to persist and restore visibility state of
     ;;     (org-visibility-include-paths `(,(file-truename "~/.emacs.d/init-emacs.org")
@@ -253,9 +254,7 @@
     ;;     ;;(org-visibility-maximum-tracked-days 180)
     ;;     ;; optionally turn off visibility state change messages
     ;;     ;;(org-visibility-display-messages nil)
-    ;;     :config
-    ;;     ;; enable org-visibility-mode
-    ;;     (org-visibility-mode 1))
+    ;;     )
     ;;
     ;; Usage:
     ;;
@@ -1496,7 +1495,7 @@
   #+END_SRC
 
   #+RESULTS:
-  : Ran 25 tests, 25 results as expected, 0 unexpected (2022-01-08 09:27:07-0600, 0.690964 sec)
+  : Ran 25 tests, 25 results as expected, 0 unexpected (2022-01-09 13:56:45-0600, 0.697782 sec)
 
 * .elpaignore
 
