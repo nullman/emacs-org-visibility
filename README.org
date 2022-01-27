@@ -2,6 +2,7 @@
 
   :BADGE:
   [[https://melpa.org/#/org-visibility][file:https://melpa.org/packages/org-visibility-badge.svg]]
+  [[https://stable.melpa.org/#/org-visibility][file:https://stable.melpa.org/packages/org-visibility-badge.svg]]
   :END:
 
   Org Visibility is an Emacs package that adds the ability to persist (save and
