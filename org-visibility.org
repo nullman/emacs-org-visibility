@@ -11,7 +11,7 @@
   #+LANGUAGE: en
   #+PROPERTY: header-args :tangle no :noweb yes :results silent :mkdir yes
   #+OPTIONS: num:nil toc:nil d:(HIDE) tags:not-in-toc html-preamble:nil html-postamble:nil
-  #+TIMESTAMP: <2022-02-27 09:32 (kyle)>
+  #+TIMESTAMP: <2022-03-12 12:53 (kyle)>
 
 * Table of Contents
   :PROPERTIES:
@@ -102,6 +102,8 @@
     ,* Org Visibility
 
       :BADGE:
+      [[https://www.gnu.org/software/emacs/][https://img.shields.io/badge/Emacs-27-8e44bd.svg]]
+      [[http://www.gnu.org/licenses/gpl-2.0.txt][https://img.shields.io/badge/license-GPL_2-green.svg]]
       [[https://melpa.org/#/org-visibility][file:https://melpa.org/packages/org-visibility-badge.svg]]
       [[https://stable.melpa.org/#/org-visibility][file:https://stable.melpa.org/packages/org-visibility-badge.svg]]
       :END:
