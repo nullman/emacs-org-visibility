@@ -1,6 +1,8 @@
 * Org Visibility
 
   :BADGE:
+  [[https://www.gnu.org/software/emacs/][https://img.shields.io/badge/Emacs-27-8e44bd.svg]]
+  [[http://www.gnu.org/licenses/gpl-2.0.txt][https://img.shields.io/badge/license-GPL_2-green.svg]]
   [[https://melpa.org/#/org-visibility][file:https://melpa.org/packages/org-visibility-badge.svg]]
   [[https://stable.melpa.org/#/org-visibility][file:https://stable.melpa.org/packages/org-visibility-badge.svg]]
   :END:
