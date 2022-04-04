@@ -11,29 +11,28 @@
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2 of the License, or
-;; (at your option) any later version.
+;; This program is free software; you can redistribute it and/or modify it under
+;; the terms of the GNU General Public License as published by the Free Software
+;; Foundation; either version 2 of the License, or (at your option) any later
+;; version.
 ;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; This program is distributed in the hope that it will be useful, but WITHOUT
+;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+;; FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 ;;
-;; You should have received a copy of the GNU General Public License along
-;; with this program; if not, write to the Free Software Foundation, Inc.,
-;; 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+;; You should have received a copy of the GNU General Public License along with
+;; this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+;; Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ;;
 ;;; Commentary:
 ;;
 ;; Org Visibility is an Emacs package that adds the ability to persist (save
-;; and load) the state of the visible sections of `org-mode' files.  The state
+;; and load) the state of the visible sections of `org-mode' files. The state
 ;; is saved when the file is saved or killed, and restored when the file is
 ;; loaded.
 ;;
 ;; Hooks are used to persist and restore org tree visibility upon loading and
-;; saving org files.  Whether or not a given buffer's file will have its
+;; saving org files. Whether or not a given buffer's file will have its
 ;; visibility persisted is determined by the following logic:
 ;;
 ;; Qualification Rules:
@@ -140,14 +139,14 @@
 ;; Usage:
 ;;
 ;; As long as `org-visibility-mode' is enabled, visibility state is
-;; automatically persisted on file save or kill, and restored when loaded.  No
-;; user intervention is needed.  The user can, however, call
+;; automatically persisted on file save or kill, and restored when loaded. No
+;; user intervention is needed. The user can, however, call
 ;; `org-visibility-force-save' to save the current visibility state of a
 ;; buffer before a file save or kill would automatically trigger it next.
 ;;
 ;; Interactive commands:
 ;;
-;; The `org-visibility-mode' function toggles the minor mode on and off.  For
+;; The `org-visibility-mode' function toggles the minor mode on and off. For
 ;; normal use, turn it on when `org-mode' is enabled.
 ;;
 ;; The `org-visibility-save' function saves the current buffer's file
@@ -565,9 +564,8 @@ Unless STATE is 'INVALID-STATE."
   "Minor mode for toggling `org-visibility' hooks on and off.
 
 This minor mode will persist (save and load) the state of the
-visible sections of `org-mode' files.  The state is saved when
-the file is saved or killed, and restored when the file is
-loaded.
+visible sections of `org-mode' files. The state is saved when the
+file is saved or killed, and restored when the file is loaded.
 
 \\{org-visibility-mode-map}"
   :lighter " vis"

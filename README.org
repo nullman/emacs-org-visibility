@@ -8,7 +8,7 @@
   :END:
 
   Org Visibility is an Emacs package that adds the ability to persist (save and
-  load) the state of the visible sections of =org-mode= files.  The state is
+  load) the state of the visible sections of =org-mode= files. The state is
   automatically saved when the file is saved or killed, and restored when the
   file is loaded.
 
@@ -48,4 +48,4 @@
 
   Copyright (C) 2022 Kyle W T Sherman
 
-  License:  [[file:LICENSE][GNU General Public License 2]]
+  License: [[file:LICENSE][GNU General Public License 2]]
