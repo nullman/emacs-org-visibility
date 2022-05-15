@@ -7,28 +7,32 @@
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2 of the License, or
-;; (at your option) any later version.
+;; This program is free software; you can redistribute it and/or modify it under
+;; the terms of the GNU General Public License as published by the Free Software
+;; Foundation; either version 2 of the License, or (at your option) any later
+;; version.
 ;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; This program is distributed in the hope that it will be useful, but WITHOUT
+;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+;; FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 ;;
-;; You should have received a copy of the GNU General Public License along
-;; with this program; if not, write to the Free Software Foundation, Inc.,
-;; 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+;; You should have received a copy of the GNU General Public License along with
+;; this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+;; Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ;;
 ;;; Commentary:
 ;;
-;; Run all tests via:
+;; Run all tests interactively:
 ;;
-;;   (ert-run-tests-batch)
+;;   (ert-run-tests-interactively '(tag org-visibility))
+;;
+;; Run all tests in batch mode:
+;;
+;;   (ert-run-tests-batch '(tag org-visibility))
 
 ;;; Code:
 
+(require 'org)
 (require 'org-visibility)
 (require 'ert)
 
@@ -175,6 +179,7 @@ Return a list of one error, or nil, if correct."
 
 (ert-deftest org-visibility-test-test-no-persistence ()
   "Test no visibility persistence."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file))
         errors)
     (org-visibility-test-run-test
@@ -192,6 +197,7 @@ Return a list of one error, or nil, if correct."
 (ert-deftest org-visibility-test-test-no-persistence-with-local-var-nil ()
   "Test no visibility persistence using local var
 `org-visibility' set to nil."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file "nil"))
         errors)
     (org-visibility-test-run-test
@@ -209,6 +215,7 @@ Return a list of one error, or nil, if correct."
 (ert-deftest org-visibility-test-test-no-persistence-with-local-var-never ()
   "Test no visibility persistence using local var
 `org-visibility' set to never."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file "never"))
         errors)
     (org-visibility-test-run-test
@@ -227,6 +234,7 @@ Return a list of one error, or nil, if correct."
 (ert-deftest org-visibility-test-test-persistence-with-local-var-t ()
   "Test visibility persistence using local var `org-visibility'
 set to t."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file "t"))
         errors)
     (org-visibility-test-run-test
@@ -244,6 +252,7 @@ set to t."
 
 (ert-deftest org-visibility-test-test-persistence-with-include-paths ()
   "Test visibility persistence using include paths."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file))
         errors)
     (org-visibility-test-run-test
@@ -262,6 +271,7 @@ set to t."
 
 (ert-deftest org-visibility-test-test-persistence-with-include-regexps ()
   "Test visibility persistence using include regular expressions."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file))
         errors)
     (org-visibility-test-run-test
@@ -280,6 +290,7 @@ set to t."
 
 (ert-deftest org-visibility-test-test-no-persistence-with-include-exclude-paths ()
   "Test no visibility persistence using include and exclude paths."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file))
         errors)
     (org-visibility-test-run-test
@@ -298,6 +309,7 @@ set to t."
 
 (ert-deftest org-visibility-test-test-no-persistence-with-include-exclude-regexps ()
   "Test no visibility persistence using include and exclude regular expressions."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file))
         errors)
     (org-visibility-test-run-test
@@ -317,6 +329,7 @@ set to t."
 (ert-deftest org-visibility-test-test-no-persistence-with-fundamental-mode-and-local-var-t ()
   "Test no visibility persistence using `fundamental-mode' and
 local var `org-visibility' set to t."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file "t"))
         errors)
     (org-visibility-test-run-test
@@ -335,6 +348,7 @@ local var `org-visibility' set to t."
 (ert-deftest org-visibility-test-test-no-persistence-with-fundamental-mode-and-include-paths ()
   "Test no visibility persistence using `fundamental-mode' and
 include paths."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file))
         errors)
     (org-visibility-test-run-test
@@ -354,6 +368,7 @@ include paths."
 (ert-deftest org-visibility-test-test-no-persistence-with-fundamental-mode-and-include-regexps ()
   "Test no visibility persistence using `fundamental-mode' and
 include regular expressions."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file))
         errors)
     (org-visibility-test-run-test
@@ -372,6 +387,7 @@ include regular expressions."
 
 (ert-deftest org-visibility-test-test-no-persistence-with-mode-disabled ()
   "Test no visibility persistence with mode disabled."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file))
         errors)
     (org-visibility-test-run-test
@@ -392,6 +408,7 @@ include regular expressions."
 
 (ert-deftest org-visibility-test-test-persistence-with-mode-enabled ()
   "Test visibility persistence with mode enabled."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file))
         errors)
     (org-visibility-test-run-test
@@ -421,6 +438,7 @@ include regular expressions."
 (ert-deftest org-visibility-test-test-maximum-tracked-files ()
   "Test visibility persistence expires when
 `org-visibility-maximum-tracked-files' is exceeded."
+  :tags '(org-visibility)
   (let ((file1 (org-visibility-test-create-org-file))
         (file2 (org-visibility-test-create-org-file))
         errors)
@@ -450,6 +468,7 @@ include regular expressions."
 (ert-deftest org-visibility-test-test-maximum-tracked-files-2 ()
   "Test visibility persistence expires when
 `org-visibility-maximum-tracked-files' is exceeded."
+  :tags '(org-visibility)
   (let ((file1 (org-visibility-test-create-org-file))
         (file2 (org-visibility-test-create-org-file))
         (file3 (org-visibility-test-create-org-file))
@@ -502,6 +521,7 @@ include regular expressions."
 (ert-deftest org-visibility-test-test-maximum-tracked-days ()
   "Test visibility persistence expires when
 `org-visibility-maximum-tracked-days' is exceeded."
+  :tags '(org-visibility)
   (let ((file1 (org-visibility-test-create-org-file))
         (file2 (org-visibility-test-create-org-file))
         errors)
@@ -535,6 +555,7 @@ include regular expressions."
 (ert-deftest org-visibility-test-test-maximum-tracked-days-2 ()
   "Test visibility persistence expires when
 `org-visibility-maximum-tracked-days' is exceeded."
+  :tags '(org-visibility)
   (let ((file1 (org-visibility-test-create-org-file))
         (file2 (org-visibility-test-create-org-file))
         (file3 (org-visibility-test-create-org-file))
@@ -592,6 +613,7 @@ include regular expressions."
 
 (ert-deftest org-visibility-test-test-remove ()
   "Test `org-visibility-remove'."
+  :tags '(org-visibility)
   (let ((file1 (org-visibility-test-create-org-file))
         (file2 (org-visibility-test-create-org-file))
         errors)
@@ -615,6 +637,7 @@ include regular expressions."
 
 (ert-deftest org-visibility-test-test-clean-remove-file ()
   "Test `org-visibility-clean'."
+  :tags '(org-visibility)
   (let ((file1 (org-visibility-test-create-org-file))
         (file2 (org-visibility-test-create-org-file))
         errors)
@@ -637,6 +660,7 @@ include regular expressions."
 
 (ert-deftest org-visibility-test-test-clean-remove-include-path ()
   "Test `org-visibility-clean'."
+  :tags '(org-visibility)
   (let ((file1 (org-visibility-test-create-org-file))
         (file2 (org-visibility-test-create-org-file))
         errors)
@@ -658,6 +682,7 @@ include regular expressions."
 
 (ert-deftest org-visibility-test-test-force-save ()
   "Test `org-visibility-force-save'."
+  :tags '(org-visibility)
   (let ((file1 (org-visibility-test-create-org-file))
         (file2 (org-visibility-test-create-org-file))
         errors)
@@ -677,6 +702,7 @@ include regular expressions."
 
 (ert-deftest org-visibility-test-test-save-all-buffers ()
   "Test `org-visibility-save-all-buffers'."
+  :tags '(org-visibility)
   (let ((file1 (org-visibility-test-create-org-file))
         (file2 (org-visibility-test-create-org-file))
         errors)
@@ -706,6 +732,7 @@ include regular expressions."
 
 (ert-deftest org-visibility-test-test-save-error-with-fundamental-mode-and-include-paths ()
   "Test save error thrown using `fundamental-mode' and include paths"
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file))
         errors)
     (org-visibility-test-run-test
@@ -728,6 +755,7 @@ include regular expressions."
 
 (ert-deftest org-visibility-test-test-dirty ()
   "Test file dirty state from change."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file))
         errors)
     (org-visibility-test-run-test
@@ -746,6 +774,7 @@ include regular expressions."
 
 (ert-deftest org-visibility-test-test-dirty-org-cycle ()
   "Test file dirty state from `org-cycle'."
+  :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file))
         errors)
     (org-visibility-test-run-test

@@ -13,12 +13,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Install
       run: sudo apt-get install emacs && emacs --version
-      
+
     - name: Compile
       run: make
-      
+
     - name: Run tests
       run: make test
