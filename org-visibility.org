@@ -11,7 +11,7 @@
   #+LANGUAGE: en
   #+PROPERTY: header-args :tangle no :noweb yes :results silent :mkdir yes
   #+OPTIONS: num:nil toc:nil d:(HIDE) tags:not-in-toc html-preamble:nil html-postamble:nil
-  #+TIMESTAMP: <2022-06-23 12:12 (kyle)>
+  #+TIMESTAMP: <2022-06-23 16:06 (kyle)>
 
 * Table of Contents
   :PROPERTIES:
@@ -25,6 +25,7 @@
   - [[#author][Author]]
   - [[#copyright][Copyright]]
   - [[#url][URL]]
+  - [[#version][Version]]
   - [[#license-header][License Header]]
 - [[#readmeorg][README.org]]
 - [[#org-visibilityel][org-visibility.el]]
@@ -67,7 +68,7 @@
 
     #+NAME: copyright
     #+BEGIN_SRC org
-      Copyright (C) <<year()>> <<name>>
+      Copyright (C) 2021-<<year()>> <<name>>
     #+END_SRC
 
 *** URL
@@ -75,6 +76,13 @@
     #+NAME: url
     #+BEGIN_SRC org
       URL: https://github.com/nullman/emacs-org-visibility
+    #+END_SRC
+
+*** Version
+
+    #+NAME: version
+    #+BEGIN_SRC org
+      1.1.7
     #+END_SRC
 
 *** License Header
@@ -163,7 +171,7 @@
     ;; <<author>>
     ;; <<url>>
     ;; Created: 2021-07-17
-    ;; Version: 1.1
+    ;; Version: <<version>>
     ;; Keywords: outlines convenience
     ;; Package-Requires: ((emacs "27.1"))
     ;;
