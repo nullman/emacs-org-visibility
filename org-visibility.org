@@ -11,7 +11,7 @@
   #+LANGUAGE: en
   #+PROPERTY: header-args :tangle no :noweb yes :results silent :mkdir yes
   #+OPTIONS: num:nil toc:nil d:(HIDE) tags:not-in-toc html-preamble:nil html-postamble:nil
-  #+TIMESTAMP: <2022-06-25 14:06 (kyle)>
+  #+TIMESTAMP: <2022-06-25 14:27 (kyle)>
 
 * Table of Contents
   :PROPERTIES:
@@ -82,7 +82,7 @@
 
     #+NAME: version
     #+BEGIN_SRC org
-      1.1.7
+      1.1.8
     #+END_SRC
 
 *** License Header
@@ -129,15 +129,14 @@
           :bind (:map org-visibility-mode-map
                       ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
                       ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
+          :hook (org-mode . org-visibility-mode)
           :custom
           ;; list of directories and files to automatically persist and restore visibility state of
           (org-visibility-include-paths `(,(file-truename "~/.emacs.d/init-emacs.org")
                                           ,(file-truename "~/org")))
           ;; list of directories and files to not persist and restore visibility state of
           (org-visibility-exclude-paths `(,(file-truename "~/org/old")
-                                          ,(file-truename "~/org/test")))
-          :config
-          (org-visibility-mode 1))
+                                          ,(file-truename "~/org/test"))))
       ,#+END_SRC
 
       Of course you will need to edit the above paths to match your setup.
@@ -277,7 +276,7 @@
     ;;     ;;(org-visibility-state-file `,(expand-file-name "/some/path/.org-visibility"))
     ;;     ;; list of directories and files to persist and restore visibility state of
     ;;     (org-visibility-include-paths `(,(file-truename "~/.emacs.d/init-emacs.org")
-    ;;                                     ,(file-truename "~/org"))))
+    ;;                                     ,(file-truename "~/org")))
     ;;     ;; persist all org files regardless of location
     ;;     ;;(org-visibility-include-regexps '("\\.org\\'"))
     ;;     ;; list of directories and files to not persist and restore visibility state of
@@ -1906,7 +1905,7 @@
     Yoyodyne, Inc., hereby disclaims all copyright interest in the program
     `Gnomovision' (which makes passes at compilers) written by James Hacker.
 
-    signature of Ty Coon, 1 April 1989
+    <signature of Ty Coon>, 1 April 1989
     Ty Coon, President of Vice
 
     This General Public License does not permit incorporating your program into

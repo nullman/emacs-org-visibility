@@ -21,15 +21,14 @@
       :bind (:map org-visibility-mode-map
                   ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
                   ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
+      :hook (org-mode . org-visibility-mode)
       :custom
       ;; list of directories and files to automatically persist and restore visibility state of
       (org-visibility-include-paths `(,(file-truename "~/.emacs.d/init-emacs.org")
                                       ,(file-truename "~/org")))
       ;; list of directories and files to not persist and restore visibility state of
       (org-visibility-exclude-paths `(,(file-truename "~/org/old")
-                                      ,(file-truename "~/org/test")))
-      :config
-      (org-visibility-mode 1))
+                                      ,(file-truename "~/org/test"))))
   #+END_SRC
 
   Of course you will need to edit the above paths to match your setup.
@@ -48,6 +47,6 @@
   All files are generated from [[file:org-visibility.org][org-visibility.org]] using Emacs' org-mode literate
   programming system to "tangle" them.
 
-  Copyright (C) 2022 Kyle W T Sherman
+  Copyright (C) 2021-2022 Kyle W T Sherman
 
   License: [[file:LICENSE][GNU General Public License 2]]

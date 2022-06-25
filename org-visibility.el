@@ -5,7 +5,7 @@
 ;; Author: Kyle W T Sherman <kylewsherman@gmail.com>
 ;; URL: https://github.com/nullman/emacs-org-visibility
 ;; Created: 2021-07-17
-;; Version: 1.1.7
+;; Version: 1.1.8
 ;; Keywords: outlines convenience
 ;; Package-Requires: ((emacs "27.1"))
 ;;
@@ -122,7 +122,7 @@
 ;;     ;;(org-visibility-state-file `,(expand-file-name "/some/path/.org-visibility"))
 ;;     ;; list of directories and files to persist and restore visibility state of
 ;;     (org-visibility-include-paths `(,(file-truename "~/.emacs.d/init-emacs.org")
-;;                                     ,(file-truename "~/org"))))
+;;                                     ,(file-truename "~/org")))
 ;;     ;; persist all org files regardless of location
 ;;     ;;(org-visibility-include-regexps '("\\.org\\'"))
 ;;     ;; list of directories and files to not persist and restore visibility state of
@@ -275,7 +275,7 @@ and `org-visibility-exclude-regexps'.)")
 With a prefix argument, insert the Emacs version string at point
 instead of displaying it."
   (interactive "P")
-  (let ((version-string "Org Visibility 1.1.7"))
+  (let ((version-string "Org Visibility 1.1.8"))
     (if here
         (insert version-string)
       (if (called-interactively-p 'interactive)
