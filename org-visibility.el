@@ -5,7 +5,7 @@
 ;; Author: Kyle W T Sherman <kylewsherman@gmail.com>
 ;; URL: https://github.com/nullman/emacs-org-visibility
 ;; Created: 2021-07-17
-;; Version: 1.1.8
+;; Version: 1.1.9
 ;; Keywords: outlines convenience
 ;; Package-Requires: ((emacs "27.1"))
 ;;
@@ -113,9 +113,9 @@
 ;;   (use-package org-visibility
 ;;     :after (org)
 ;;     :demand t
-;;     :bind (:map org-visibility-mode-map
-;;                 ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
-;;                 ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
+;;     :bind* (:map org-visibility-mode-map
+;;                  ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
+;;                  ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
 ;;     :hook (org-mode . org-visibility-mode)
 ;;     :custom
 ;;     ;; optionally change the location of the state file
@@ -275,26 +275,26 @@ and `org-visibility-exclude-regexps'.)")
 With a prefix argument, insert the Emacs version string at point
 instead of displaying it."
   (interactive "P")
-  (let ((version-string "Org Visibility 1.1.8"))
+  (let ((version-string "Org Visibility 1.1.9"))
     (if here
         (insert version-string)
       (if (called-interactively-p 'interactive)
           (message "%s" version-string)
         version-string))))
 
-(defun org-visibility-timestamp ()
+(defun org-visibility--timestamp ()
   "Return timestamp in ISO 8601 format (YYYY-mm-ddTHH:MM:SSZ)."
   (format-time-string "%FT%T%Z"))
 
-(defun org-visibility-timestamp-to-epoch (timestamp)
+(defun org-visibility--timestamp-to-epoch (timestamp)
   "Return epoch (seconds since 1970-01-01) from TIMESTAMP."
   (truncate (float-time (date-to-time timestamp))))
 
-(defun org-visibility-buffer-checksum (&optional buffer)
+(defun org-visibility--buffer-checksum (&optional buffer)
   "Return checksum for BUFFER."
   (secure-hash 'md5 (or buffer (current-buffer))))
 
-(defun org-visibility-remove-over-maximum-tracked-files (data)
+(defun org-visibility--remove-over-maximum-tracked-files (data)
   "Remove oldest files over maximum file count from DATA.
 
 Does nothing unless `org-visibility-maximum-tracked-files' is
@@ -305,7 +305,7 @@ non-nil and exceeded."
       (setq data (nreverse (cdr (nreverse data))))))
   data)
 
-(defun org-visibility-remove-over-maximum-tracked-days (data)
+(defun org-visibility--remove-over-maximum-tracked-days (data)
   "Remove all files over maximum day count from DATA.
 
 Does notthing unless `org-visibility-maximum-tracked-days' is
@@ -319,7 +319,7 @@ non-nil and exceeded."
            (cl-subseq data 0 n)))
     data))
 
-(defun org-visibility-set (buffer visible)
+(defun org-visibility--set (buffer visible)
   "Set visibility state.
 
 Set visibility state record for BUFFER to VISIBLE and update
@@ -330,19 +330,19 @@ Set visibility state record for BUFFER to VISIBLE and update
                        (insert-file-contents org-visibility-state-file)
                        (read (buffer-substring-no-properties (point-min) (point-max)))))))
         (file-name (buffer-file-name buffer))
-        (date (org-visibility-timestamp))
-        (checksum (org-visibility-buffer-checksum buffer)))
+        (date (org-visibility--timestamp))
+        (checksum (org-visibility--buffer-checksum buffer)))
     (when file-name
       (setq data (delq (assoc file-name data) data)) ; remove previous value
       (setq data (append (list (list file-name date checksum visible)) data)) ; add new value
-      (setq data (org-visibility-remove-over-maximum-tracked-files data)) ; remove old files over maximum count
-      (setq data (org-visibility-remove-over-maximum-tracked-days data)) ; remove old files over maximum days
+      (setq data (org-visibility--remove-over-maximum-tracked-files data)) ; remove old files over maximum count
+      (setq data (org-visibility--remove-over-maximum-tracked-days data)) ; remove old files over maximum days
       (with-temp-file org-visibility-state-file
         (insert (format "%S\n" data)))
       (when org-visibility-display-messages
         (message "Set visibility state for %s" file-name)))))
 
-(defun org-visibility-get (buffer)
+(defun org-visibility--get (buffer)
   "Get visibility state.
 
 Return visibility state for BUFFER if found in
@@ -353,7 +353,7 @@ Return visibility state for BUFFER if found in
                        (insert-file-contents org-visibility-state-file)
                        (read (buffer-substring-no-properties (point-min) (point-max)))))))
         (file-name (buffer-file-name buffer))
-        (checksum (org-visibility-buffer-checksum buffer)))
+        (checksum (org-visibility--buffer-checksum buffer)))
     (when file-name
       (let ((state (assoc file-name data)))
         (when (string= (caddr state) checksum)
@@ -361,7 +361,7 @@ Return visibility state for BUFFER if found in
             (message "Restored visibility state for %s" file-name))
           (cadddr state))))))
 
-(defun org-visibility-save-internal (&optional buffer noerror force)
+(defun org-visibility--save-internal (&optional buffer noerror force)
   "Save visibility snapshot of org BUFFER.
 
 If NOERROR is non-nil, do not throw errors.
@@ -371,12 +371,12 @@ If FORCE is non-nil, save even if file is not marked as dirty."
         (file-name (buffer-file-name buffer))
         (visible '()))
     (with-current-buffer buffer
-      (if (not (eq major-mode 'org-mode))
+      (if (not (derived-mode-p 'org-mode))
           (unless noerror
-            (user-error "This function only works with `org-mode' files"))
+            (user-error "Not an Org buffer"))
         (if (not file-name)
             (unless noerror
-              (user-error "There is no file associated with this buffer: %S" buffer))
+              (user-error "No file associated with this buffer: %S" buffer))
           (when (or force org-visibility-dirty)
             (save-mark-and-excursion
               (goto-char (point-min))
@@ -384,22 +384,22 @@ If FORCE is non-nil, save even if file is not marked as dirty."
                 (when (not (invisible-p (point)))
                   (push (point) visible))
                 (forward-visible-line 1)))
-            (org-visibility-set buffer (nreverse visible))
+            (org-visibility--set buffer (nreverse visible))
             (setq org-visibility-dirty nil)))))))
 
-(defun org-visibility-load-internal (&optional buffer noerror)
+(defun org-visibility--load-internal (&optional buffer noerror)
   "Load visibility snapshot of org BUFFER.
 
 If NOERROR is non-nil, do not throw errors."
   (let ((buffer (or buffer (current-buffer))))
     (with-current-buffer buffer
-      (if (not (eq major-mode 'org-mode))
+      (if (not (derived-mode-p 'org-mode))
           (unless noerror
-            (user-error "This function only works with `org-mode' files"))
+            (user-error "Not an Org buffer"))
         (if (not (buffer-file-name buffer))
             (unless noerror
-              (user-error "There is no file associated with this buffer: %S" buffer))
-          (let ((visible (org-visibility-get buffer)))
+              (user-error "No file associated with this buffer: %S" buffer))
+          (let ((visible (org-visibility--get buffer)))
             (save-mark-and-excursion
               (outline-hide-sublevels 1)
               (dolist (x visible)
@@ -410,7 +410,7 @@ If NOERROR is non-nil, do not throw errors."
                       (org-flag-region (1- (point-at-bol)) (point-at-eol) nil 'outline))))))
             (setq org-visibility-dirty nil)))))))
 
-(defun org-visibility-check-file-path (file-name paths)
+(defun org-visibility--check-file-path (file-name paths)
   "Return whether FILE-NAME is in one of the PATHS."
   (let ((file-name (file-truename file-name)))
     (cl-do ((paths paths (cdr paths))
@@ -422,7 +422,7 @@ If NOERROR is non-nil, do not throw errors."
             (when (string= part path)
               (setq match t))))))))
 
-(defun org-visibility-check-file-regexp (file-name regexps)
+(defun org-visibility--check-file-regexp (file-name regexps)
   "Return whether FILE-NAME is a match for one of the REGEXPS."
   (let ((file-name (file-truename file-name)))
     (cl-do ((regexps regexps (cdr regexps))
@@ -432,7 +432,7 @@ If NOERROR is non-nil, do not throw errors."
         (when (string-match regexp file-name)
           (setq match t))))))
 
-(defun org-visibility-check-file-include-exclude-paths-and-regexps (file-name)
+(defun org-visibility--check-file-include-exclude-paths-and-regexps (file-name)
   "Return whether FILE-NAME should have its visibility state persisted.
 
 Return whether FILE-NAME is in one of the paths listed in
@@ -441,12 +441,12 @@ listed in `org-visibility-include-regexps', and FILE-NAME is not
 in one of the paths listed in `org-visibility-exclude-paths' or
 matches a regular expression listed in
 `org-visibility-exclude-regexps'."
-  (and (or (org-visibility-check-file-path file-name org-visibility-include-paths)
-           (org-visibility-check-file-regexp file-name org-visibility-include-regexps))
-       (not (or (org-visibility-check-file-path file-name org-visibility-exclude-paths)
-                (org-visibility-check-file-regexp file-name org-visibility-exclude-regexps)))))
+  (and (or (org-visibility--check-file-path file-name org-visibility-include-paths)
+           (org-visibility--check-file-regexp file-name org-visibility-include-regexps))
+       (not (or (org-visibility--check-file-path file-name org-visibility-exclude-paths)
+                (org-visibility--check-file-regexp file-name org-visibility-exclude-regexps)))))
 
-(defun org-visibility-check-buffer-file-persistence (buffer)
+(defun org-visibility--check-buffer-file-persistence (buffer)
   "Return whether BUFFER should have its visibility state persisted.
 
 Return whether BUFFER's file is in one of the paths listed in
@@ -459,7 +459,7 @@ or matches a regular expression listed in
     (cl-case (if (boundp 'org-visibility) org-visibility nil)
       ('nil (let ((file-name (buffer-file-name buffer)))
               (if file-name
-                  (org-visibility-check-file-include-exclude-paths-and-regexps file-name)
+                  (org-visibility--check-file-include-exclude-paths-and-regexps file-name)
                 nil)))
       ('never nil)
       (t t))))
@@ -491,7 +491,7 @@ or matches a regular expression listed in
           (lambda (x)
             (let ((file-name (car x)))
               (and (file-exists-p file-name)
-                   (org-visibility-check-file-include-exclude-paths-and-regexps file-name))))
+                   (org-visibility--check-file-include-exclude-paths-and-regexps file-name))))
           (and (file-exists-p org-visibility-state-file)
                (with-temp-buffer
                  (insert-file-contents org-visibility-state-file)
@@ -509,8 +509,8 @@ If NOERROR is non-nil, do not throw errors.
 
 If FORCE is non-nil, save even if file is not marked as dirty."
   (interactive)
-  (when (org-visibility-check-buffer-file-persistence (current-buffer))
-    (org-visibility-save-internal (current-buffer) noerror force)))
+  (when (org-visibility--check-buffer-file-persistence (current-buffer))
+    (org-visibility--save-internal (current-buffer) noerror force)))
 
 (defun org-visibility-save-noerror ()
   "Save visibility state if buffer has been modified, ignoring errors."
@@ -529,22 +529,22 @@ If FORCE is non-nil, save even if file is not marked as dirty."
 If FORCE is non-nil, save even if files are not marked as dirty."
   (interactive)
   (dolist (buffer (buffer-list))
-    (when (org-visibility-check-buffer-file-persistence buffer)
-      (org-visibility-save-internal buffer :noerror force))))
+    (when (org-visibility--check-buffer-file-persistence buffer)
+      (org-visibility--save-internal buffer :noerror force))))
 
 ;;;###autoload
 (defun org-visibility-load (&optional file)
   "Load FILE or `current-buffer' and restore its visibility state, ignoring errors."
   (interactive)
   (let ((buffer (if file (get-file-buffer file) (current-buffer))))
-    (when (and buffer (org-visibility-check-buffer-file-persistence buffer))
-      (org-visibility-load-internal buffer :noerror))))
+    (when (and buffer (org-visibility--check-buffer-file-persistence buffer))
+      (org-visibility--load-internal buffer :noerror))))
 
 (defun org-visibility-dirty ()
   "Set visibility dirty flag."
   (when (and (eq major-mode 'org-mode)
              (not org-visibility-dirty)
-             (org-visibility-check-buffer-file-persistence (current-buffer)))
+             (org-visibility--check-buffer-file-persistence (current-buffer)))
     (setq org-visibility-dirty t)))
 
 (defun org-visibility-dirty-org-cycle (state)
