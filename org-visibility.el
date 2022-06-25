@@ -101,7 +101,7 @@
 ;;   (require 'org-visibility)
 ;;
 ;;   ;; enable org-visibility-mode
-;;   (org-visibility-mode 1)
+;;   (add-hook 'org-mode-hook #'org-visibility-mode)
 ;;
 ;;   ;; optionally set a keybinding to force save
 ;;   (bind-keys :map org-visibility-mode-map
@@ -116,6 +116,7 @@
 ;;     :bind (:map org-visibility-mode-map
 ;;                 ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
 ;;                 ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
+;;     :hook (org-mode . org-visibility-mode)
 ;;     :custom
 ;;     ;; optionally change the location of the state file
 ;;     ;;(org-visibility-state-file `,(expand-file-name "/some/path/.org-visibility"))
@@ -134,8 +135,7 @@
 ;;     ;;(org-visibility-maximum-tracked-days 180)
 ;;     ;; optionally turn off visibility state change messages
 ;;     ;;(org-visibility-display-messages nil)
-;;     :config
-;;     (org-visibility-mode 1))
+;;     )
 ;;
 ;; Usage:
 ;;
@@ -269,6 +269,18 @@ and `org-visibility-exclude-regexps'.)")
 (defvar-local org-visibility-dirty
   nil
   "Non-nil if buffer has been modified since last visibility save.")
+
+(defun org-visibility-version (&optional here)
+  "Display the version of Org Visibility that is running in this session.
+With a prefix argument, insert the Emacs version string at point
+instead of displaying it."
+  (interactive "P")
+  (let ((version-string "Org Visibility 1.1.7"))
+    (if here
+        (insert version-string)
+      (if (called-interactively-p 'interactive)
+          (message "%s" version-string)
+        version-string))))
 
 (defun org-visibility-timestamp ()
   "Return timestamp in ISO 8601 format (YYYY-mm-ddTHH:MM:SSZ)."
