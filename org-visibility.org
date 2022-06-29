@@ -8,7 +8,7 @@
   #+LANGUAGE: en
   #+PROPERTY: header-args :tangle no :noweb yes :results silent :mkdir yes
   #+OPTIONS: num:nil toc:nil d:(HIDE) tags:not-in-toc html-preamble:nil html-postamble:nil
-  #+TIMESTAMP: <2022-06-25 15:34 (kyle)>
+  #+TIMESTAMP: <2022-07-09 12:26 (kyle)>
 
 * Table of Contents
   :PROPERTIES:
@@ -79,7 +79,7 @@
 
     #+NAME: version
     #+BEGIN_SRC org
-      1.1.9
+      1.1.10
     #+END_SRC
 
 *** License Header
@@ -255,9 +255,9 @@
     ;;   (add-hook 'org-mode-hook #'org-visibility-mode)
     ;;
     ;;   ;; optionally set a keybinding to force save
-    ;;   (bind-keys :map org-visibility-mode-map
-    ;;                   ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
-    ;;                   ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
+    ;;   (bind-keys* :map org-visibility-mode-map
+    ;;                    ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
+    ;;                    ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
     ;;
     ;; Or, if using `use-package', add something like this instead:
     ;;
@@ -475,7 +475,8 @@
 
     Set visibility state record for BUFFER to VISIBLE and update
     `org-visibility-state-file' with new state."
-      (let ((data (and (file-exists-p org-visibility-state-file)
+      (let ((print-length nil)
+            (data (and (file-exists-p org-visibility-state-file)
                        (ignore-errors
                          (with-temp-buffer
                            (insert-file-contents org-visibility-state-file)
@@ -619,7 +620,8 @@
     (defun org-visibility-remove (&optional file-name)
       "Remove visibility state of FILE-NAME or `current-buffer'."
       (interactive)
-      (let ((file-name (or file-name (buffer-file-name (current-buffer)))))
+      (let ((print-length nil)
+            (file-name (or file-name (buffer-file-name (current-buffer)))))
         (when file-name
           (let ((data
                  (cl-remove-if
@@ -637,7 +639,8 @@
     (defun org-visibility-clean ()
       "Remove any missing files from `org-visibility-state-file'."
       (interactive)
-      (let ((data
+      (let ((print-length nil)
+            (data
              (cl-remove-if-not
               (lambda (x)
                 (let ((file-name (car x)))
@@ -735,7 +738,6 @@
     \\{org-visibility-mode-map}"
       :lighter " vis"
       :keymap (make-sparse-keymap)
-      ;; toggle hooks on and off
       (if org-visibility-mode
           (org-visibility-enable-hooks)
         (org-visibility-disable-hooks)))
@@ -952,8 +954,8 @@
          (list file))))
 
     (ert-deftest org-visibility-test-test-no-persistence-with-local-var-never ()
-      "Test no visibility persistence using local var
-    `org-visibility' set to never."
+      "Test no visibility persistence using local var `org-visibility'
+    set to never."
       :tags '(org-visibility)
       (let ((file (org-visibility-test-create-org-file "never"))
             errors)
@@ -971,8 +973,8 @@
          (list file))))
 
     (ert-deftest org-visibility-test-test-persistence-with-local-var-t ()
-      "Test visibility persistence using local var `org-visibility'
-    set to t."
+      "Test visibility persistence using local var `org-visibility' set
+    to t."
       :tags '(org-visibility)
       (let ((file (org-visibility-test-create-org-file "t"))
             errors)
@@ -1170,6 +1172,28 @@
              (find-file file)
              (org-visibility-test-check-mode t)
              (push (org-visibility-test-check-visible-lines '(1 5 11)) errors)
+             (kill-buffer (current-buffer)))
+           errors)
+         (list file))))
+
+    (ert-deftest org-visibility-test-test-persistence-with-startup-keyword-settings ()
+      "Test visibility persistence when STARTUP keyword settings are present."
+      :tags '(org-visibility)
+      (let ((file (org-visibility-test-create-org-file))
+            errors)
+        (org-visibility-test-run-test
+         (lambda ()
+           (let ((org-visibility-include-paths (list file)))
+             (find-file file)
+             (org-visibility-test-cycle-outline)
+             (push (org-visibility-test-check-visible-lines '(1 5 6 9 11)) errors)
+             (goto-char (point-min))
+             (insert "#+STARTUP: overview\n\n")
+             (push (org-visibility-test-check-visible-lines '(1 2 3 7 8 11 13)) errors)
+             (save-buffer)
+             (kill-buffer (current-buffer))
+             (find-file file)
+             (push (org-visibility-test-check-visible-lines '(1 2 3 7 8 11 13)) errors)
              (kill-buffer (current-buffer)))
            errors)
          (list file))))
