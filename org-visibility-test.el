@@ -213,8 +213,8 @@ Return a list of one error, or nil, if correct."
      (list file))))
 
 (ert-deftest org-visibility-test-test-no-persistence-with-local-var-never ()
-  "Test no visibility persistence using local var
-`org-visibility' set to never."
+  "Test no visibility persistence using local var `org-visibility'
+set to never."
   :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file "never"))
         errors)
@@ -232,8 +232,8 @@ Return a list of one error, or nil, if correct."
      (list file))))
 
 (ert-deftest org-visibility-test-test-persistence-with-local-var-t ()
-  "Test visibility persistence using local var `org-visibility'
-set to t."
+  "Test visibility persistence using local var `org-visibility' set
+to t."
   :tags '(org-visibility)
   (let ((file (org-visibility-test-create-org-file "t"))
         errors)
@@ -431,6 +431,28 @@ include regular expressions."
          (find-file file)
          (org-visibility-test-check-mode t)
          (push (org-visibility-test-check-visible-lines '(1 5 11)) errors)
+         (kill-buffer (current-buffer)))
+       errors)
+     (list file))))
+
+(ert-deftest org-visibility-test-test-persistence-with-startup-keyword-settings ()
+  "Test visibility persistence when STARTUP keyword settings are present."
+  :tags '(org-visibility)
+  (let ((file (org-visibility-test-create-org-file))
+        errors)
+    (org-visibility-test-run-test
+     (lambda ()
+       (let ((org-visibility-include-paths (list file)))
+         (find-file file)
+         (org-visibility-test-cycle-outline)
+         (push (org-visibility-test-check-visible-lines '(1 5 6 9 11)) errors)
+         (goto-char (point-min))
+         (insert "#+STARTUP: overview\n\n")
+         (push (org-visibility-test-check-visible-lines '(1 2 3 7 8 11 13)) errors)
+         (save-buffer)
+         (kill-buffer (current-buffer))
+         (find-file file)
+         (push (org-visibility-test-check-visible-lines '(1 2 3 7 8 11 13)) errors)
          (kill-buffer (current-buffer)))
        errors)
      (list file))))
