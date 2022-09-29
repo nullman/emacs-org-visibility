@@ -21,14 +21,15 @@
       :bind* (:map org-visibility-mode-map
                    ("C-x C-v" . org-visibility-force-save) ; defaults to `find-alternative-file'
                    ("C-x M-v" . org-visibility-remove))    ; defaults to undefined
-      :hook (org-mode . org-visibility-mode)
       :custom
       ;; list of directories and files to automatically persist and restore visibility state of
       (org-visibility-include-paths `(,(file-truename "~/.emacs.d/init-emacs.org")
                                       ,(file-truename "~/org")))
       ;; list of directories and files to not persist and restore visibility state of
       (org-visibility-exclude-paths `(,(file-truename "~/org/old")
-                                      ,(file-truename "~/org/test"))))
+                                      ,(file-truename "~/org/test")))
+      :config
+      (org-visibility-mode 1))
   #+END_SRC
 
   Of course you will need to edit the above paths to match your setup.
