@@ -8,67 +8,93 @@
   #+LANGUAGE: en
   #+PROPERTY: header-args :tangle no :noweb yes :results silent :mkdir yes
   #+OPTIONS: num:nil toc:nil d:(HIDE) tags:not-in-toc html-preamble:nil html-postamble:nil
-  #+TIMESTAMP: <2022-09-20 16:17 (kyle)>
+  #+TIMESTAMP: <2023-01-15 09:55 (kyle)>
 
 * Table of Contents
   :PROPERTIES:
-  :TOC: :include all :ignore this
+  :CUSTOM_ID: table-of-contents
+  :TOC:      :include all :ignore this
   :END:
 
   :CONTENTS:
 - [[#constants][Constants]]
-  - [[#name][Name]]
-  - [[#email][Email]]
-  - [[#author][Author]]
-  - [[#copyright][Copyright]]
-  - [[#url][URL]]
-  - [[#version][Version]]
-  - [[#license-header][License Header]]
-- [[#readmeorg][README.org]]
-- [[#org-visibilityel][org-visibility.el]]
-- [[#org-visibility-testel][org-visibility-test.el]]
+  - [[#constants-author][Author]]
+  - [[#constants-email][Email]]
+  - [[#constants-author-email][Author-Email]]
+  - [[#constants-copyright][Copyright]]
+  - [[#constants-url][URL]]
+  - [[#constants-version][Version]]
+  - [[#constants-license-header][License Header]]
+- [[#readme-dot-org][README.org]]
+- [[#org-visibility-dot-el][org-visibility.el]]
+- [[#org-visibility-test-dot-el][org-visibility-test.el]]
 - [[#makefile][Makefile]]
-- [[#elpaignore][.elpaignore]]
-- [[#gitignore][.gitignore]]
+- [[#dot-elpaignore][.elpaignore]]
+- [[#dot-gitignore][.gitignore]]
 - [[#license][LICENSE]]
   :END:
 
 * Constants
+  :PROPERTIES:
+  :CUSTOM_ID: constants
+  :END:
 
-*** Name
+*** Author
+    :PROPERTIES:
+    :CUSTOM_ID: constants-author
+    :END:
 
-    #+NAME: name
+    #+NAME: author
     #+BEGIN_SRC org
       Kyle W T Sherman
     #+END_SRC
 
 *** Email
+    :PROPERTIES:
+    :CUSTOM_ID: constants-email
+    :END:
 
     #+NAME: email
     #+BEGIN_SRC org
       <kylewsherman@gmail.com>
     #+END_SRC
 
-*** Author
+*** Author-Email
+    :PROPERTIES:
+    :CUSTOM_ID: constants-author-email
+    :END:
 
-    #+NAME: author
+    #+NAME: author-email
     #+BEGIN_SRC org
-      Author: <<name>> <<email>>
+      Author: <<author>> <<email>>
     #+END_SRC
 
 *** Copyright
+    :PROPERTIES:
+    :CUSTOM_ID: constants-copyright
+    :END:
 
     #+NAME: year
     #+BEGIN_SRC emacs-lisp
       (format-time-string "%Y" nil t)
     #+END_SRC
 
+    #+NAME: year-range
+    #+BEGIN_SRC emacs-lisp :var start-year="2021"
+      (if (string= "<<year()>>" start-year)
+          start-year
+        (concat start-year "-<<year()>>"))
+    #+END_SRC
+
     #+NAME: copyright
     #+BEGIN_SRC org
-      Copyright (C) 2021-<<year()>> <<name>>
+      Copyright © <<year-range()>> <<author>>
     #+END_SRC
 
 *** URL
+    :PROPERTIES:
+    :CUSTOM_ID: constants-url
+    :END:
 
     #+NAME: url
     #+BEGIN_SRC org
@@ -76,6 +102,9 @@
     #+END_SRC
 
 *** Version
+    :PROPERTIES:
+    :CUSTOM_ID: constants-version
+    :END:
 
     #+NAME: version
     #+BEGIN_SRC org
@@ -83,6 +112,9 @@
     #+END_SRC
 
 *** License Header
+    :PROPERTIES:
+    :CUSTOM_ID: constants-license-header
+    :END:
 
     #+NAME: license-header
     #+BEGIN_SRC org
@@ -101,6 +133,9 @@
     #+END_SRC
 
 * README.org
+  :PROPERTIES:
+  :CUSTOM_ID: readme-dot-org
+  :END:
 
   #+BEGIN_SRC org :tangle README.org
     ,* Org Visibility
@@ -158,13 +193,16 @@
   #+END_SRC
 
 * org-visibility.el
+  :PROPERTIES:
+  :CUSTOM_ID: org-visibility-dot-el
+  :END:
 
   #+BEGIN_SRC emacs-lisp :tangle org-visibility.el
     ;;; org-visibility.el --- Persistent org tree visibility -*- lexical-binding: t; -*-
     ;;
     ;;; <<copyright>>
     ;;
-    ;; <<author>>
+    ;; <<author-email>>
     ;; <<url>>
     ;; Created: 2021-07-17
     ;; Version: <<version>>
@@ -751,13 +789,16 @@
   #+END_SRC
 
 * org-visibility-test.el
+  :PROPERTIES:
+  :CUSTOM_ID: org-visibility-test-dot-el
+  :END:
 
   #+BEGIN_SRC emacs-lisp :tangle org-visibility-test.el
     ;;; org-visibility-test.el --- Test org-visibility.el -*- lexical-binding: t; no-byte-compile: t; -*-
     ;;
     ;;; <<copyright>>
     ;;
-    ;; <<author>>
+    ;; <<author-email>>
     ;; Created: 2021-07-17
     ;;
     ;; This file is not part of GNU Emacs.
@@ -1559,6 +1600,9 @@
   #+END_SRC
 
 * Makefile
+  :PROPERTIES:
+  :CUSTOM_ID: makefile
+  :END:
 
   #+BEGIN_SRC makefile :tangle Makefile
     .RECIPEPREFIX = >
@@ -1589,9 +1633,12 @@
   #+END_SRC
 
   #+RESULTS:
-  :
+  : Ran 26 tests, 26 results as expected, 0 unexpected (2022-09-27 12:10:49-0500, 1.086907 sec)
 
 * .elpaignore
+  :PROPERTIES:
+  :CUSTOM_ID: dot-elpaignore
+  :END:
 
   #+BEGIN_SRC conf-unix :tangle .elpaignore
     .gitignore
@@ -1600,20 +1647,25 @@
   #+END_SRC
 
 * .gitignore
+  :PROPERTIES:
+  :CUSTOM_ID: dot-gitignore
+  :END:
 
   #+BEGIN_SRC conf-unix :tangle .gitignore
     ,*.elc
   #+END_SRC
 
 * LICENSE
+  :PROPERTIES:
+  :CUSTOM_ID: license
+  :END:
 
   #+BEGIN_SRC text :tangle LICENSE
     GNU GENERAL PUBLIC LICENSE
 
     Version 2, June 1991
 
-    Copyright (C) 1989, 1991 Free Software Foundation, Inc.
-    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+    <<copyright>>
 
     Everyone is permitted to copy and distribute verbatim copies of this license
     document, but changing it is not allowed.

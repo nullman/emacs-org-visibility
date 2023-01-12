@@ -1,6 +1,6 @@
 ;;; org-visibility.el --- Persistent org tree visibility -*- lexical-binding: t; -*-
 ;;
-;;; Copyright (C) 2021-2022 Kyle W T Sherman
+;;; Copyright © 2021-2023 Kyle W T Sherman
 ;;
 ;; Author: Kyle W T Sherman <kylewsherman@gmail.com>
 ;; URL: https://github.com/nullman/emacs-org-visibility
