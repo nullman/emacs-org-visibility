@@ -8,31 +8,7 @@
   #+LANGUAGE: en
   #+PROPERTY: header-args :tangle no :noweb yes :results silent :mkdir yes
   #+OPTIONS: num:nil toc:nil d:(HIDE) tags:not-in-toc html-preamble:nil html-postamble:nil
-  #+TIMESTAMP: <2023-01-15 09:55 (kyle)>
-
-* Table of Contents
-  :PROPERTIES:
-  :CUSTOM_ID: table-of-contents
-  :TOC:      :include all :ignore this
-  :END:
-
-  :CONTENTS:
-- [[#constants][Constants]]
-  - [[#constants-author][Author]]
-  - [[#constants-email][Email]]
-  - [[#constants-author-email][Author-Email]]
-  - [[#constants-copyright][Copyright]]
-  - [[#constants-url][URL]]
-  - [[#constants-version][Version]]
-  - [[#constants-license-header][License Header]]
-- [[#readme-dot-org][README.org]]
-- [[#org-visibility-dot-el][org-visibility.el]]
-- [[#org-visibility-test-dot-el][org-visibility-test.el]]
-- [[#makefile][Makefile]]
-- [[#dot-elpaignore][.elpaignore]]
-- [[#dot-gitignore][.gitignore]]
-- [[#license][LICENSE]]
-  :END:
+  #+TIMESTAMP: <2023-01-21 19:14 (kyle)>
 
 * Constants
   :PROPERTIES:
